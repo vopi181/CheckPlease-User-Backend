@@ -2,5 +2,5 @@
 
 
 ## scripts
-`regnerate_protos.ps1`
+`regenerate_protos.ps1`
 * regenerates grpc from protobufs
