@@ -1,0 +1,37 @@
+syntax = "proto3";
+option go_package = "github.com/vopi181/CheckPlease-User-Backend/CPUser";
+package CPUser;
+
+import "google/protobuf/empty.proto";
+
+
+
+service CPUser {
+//  rpc Login (LoginRequest) returns (LoginReponse) {}
+  rpc CreateUser (CreateUserRequest) returns (AuthTokenResponse) {}
+  rpc ReAuthUser (ReAuthUserRequest) returns (AuthTokenResponse) {}
+
+
+  //misc
+  rpc Ping (google.protobuf.Empty) returns (PongResponse) {}
+}
+
+message PongResponse {
+  string pong_message = 1;
+}
+
+message CreateUserRequest {
+  string username = 1;
+  string password = 2;
+  string email = 3;
+}
+
+message ReAuthUserRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message AuthTokenResponse {
+  string AuthToken = 1;
+}
+
