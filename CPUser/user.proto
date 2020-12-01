@@ -35,3 +35,13 @@ message AuthTokenResponse {
   string AuthToken = 1;
 }
 
+// Basic Auth Header for requests
+message AuthTokenRequest {
+  string Token = 1;
+}
+
+// Not used yet
+message OrderInitiateRequest {
+  AuthTokenRequest AuthRequest = 1;
+  string OrderId = 2;
+}
