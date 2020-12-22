@@ -337,20 +337,113 @@ func (x *AuthTokenRequest) GetToken() string {
 	return ""
 }
 
-// Not used yet
+// ###### PAY #######
+type PaymentAddCardRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	AuthRequest *AuthTokenRequest `protobuf:"bytes,1,opt,name=auth_request,json=authRequest,proto3" json:"auth_request,omitempty"`
+	Card        *PaymentCard      `protobuf:"bytes,2,opt,name=card,proto3" json:"card,omitempty"`
+}
+
+func (x *PaymentAddCardRequest) Reset() {
+	*x = PaymentAddCardRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_CPUser_user_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PaymentAddCardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PaymentAddCardRequest) ProtoMessage() {}
+
+func (x *PaymentAddCardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_CPUser_user_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PaymentAddCardRequest.ProtoReflect.Descriptor instead.
+func (*PaymentAddCardRequest) Descriptor() ([]byte, []int) {
+	return file_CPUser_user_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *PaymentAddCardRequest) GetAuthRequest() *AuthTokenRequest {
+	if x != nil {
+		return x.AuthRequest
+	}
+	return nil
+}
+
+func (x *PaymentAddCardRequest) GetCard() *PaymentCard {
+	if x != nil {
+		return x.Card
+	}
+	return nil
+}
+
+type PaymentAddCardResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *PaymentAddCardResponse) Reset() {
+	*x = PaymentAddCardResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_CPUser_user_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PaymentAddCardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PaymentAddCardResponse) ProtoMessage() {}
+
+func (x *PaymentAddCardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_CPUser_user_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PaymentAddCardResponse.ProtoReflect.Descriptor instead.
+func (*PaymentAddCardResponse) Descriptor() ([]byte, []int) {
+	return file_CPUser_user_proto_rawDescGZIP(), []int{7}
+}
+
 type OrderInitiateRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	AuthRequest *AuthTokenRequest `protobuf:"bytes,1,opt,name=AuthRequest,proto3" json:"AuthRequest,omitempty"`
+	AuthRequest *AuthTokenRequest `protobuf:"bytes,1,opt,name=auth_request,json=authRequest,proto3" json:"auth_request,omitempty"`
 	TableToken  string            `protobuf:"bytes,2,opt,name=table_token,json=tableToken,proto3" json:"table_token,omitempty"`
 }
 
 func (x *OrderInitiateRequest) Reset() {
 	*x = OrderInitiateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_CPUser_user_proto_msgTypes[6]
+		mi := &file_CPUser_user_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -363,7 +456,7 @@ func (x *OrderInitiateRequest) String() string {
 func (*OrderInitiateRequest) ProtoMessage() {}
 
 func (x *OrderInitiateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_CPUser_user_proto_msgTypes[6]
+	mi := &file_CPUser_user_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -376,7 +469,7 @@ func (x *OrderInitiateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderInitiateRequest.ProtoReflect.Descriptor instead.
 func (*OrderInitiateRequest) Descriptor() ([]byte, []int) {
-	return file_CPUser_user_proto_rawDescGZIP(), []int{6}
+	return file_CPUser_user_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *OrderInitiateRequest) GetAuthRequest() *AuthTokenRequest {
@@ -389,6 +482,250 @@ func (x *OrderInitiateRequest) GetAuthRequest() *AuthTokenRequest {
 func (x *OrderInitiateRequest) GetTableToken() string {
 	if x != nil {
 		return x.TableToken
+	}
+	return ""
+}
+
+type OrderInitiateResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Order *Order `protobuf:"bytes,1,opt,name=order,proto3" json:"order,omitempty"`
+}
+
+func (x *OrderInitiateResponse) Reset() {
+	*x = OrderInitiateResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_CPUser_user_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *OrderInitiateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrderInitiateResponse) ProtoMessage() {}
+
+func (x *OrderInitiateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_CPUser_user_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrderInitiateResponse.ProtoReflect.Descriptor instead.
+func (*OrderInitiateResponse) Descriptor() ([]byte, []int) {
+	return file_CPUser_user_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *OrderInitiateResponse) GetOrder() *Order {
+	if x != nil {
+		return x.Order
+	}
+	return nil
+}
+
+type OrderItem struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name string  `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Type string  `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	Cost float32 `protobuf:"fixed32,3,opt,name=cost,proto3" json:"cost,omitempty"`
+}
+
+func (x *OrderItem) Reset() {
+	*x = OrderItem{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_CPUser_user_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *OrderItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrderItem) ProtoMessage() {}
+
+func (x *OrderItem) ProtoReflect() protoreflect.Message {
+	mi := &file_CPUser_user_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrderItem.ProtoReflect.Descriptor instead.
+func (*OrderItem) Descriptor() ([]byte, []int) {
+	return file_CPUser_user_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *OrderItem) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *OrderItem) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *OrderItem) GetCost() float32 {
+	if x != nil {
+		return x.Cost
+	}
+	return 0
+}
+
+type Order struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	RestName string       `protobuf:"bytes,1,opt,name=rest_name,json=restName,proto3" json:"rest_name,omitempty"`
+	Orders   []*OrderItem `protobuf:"bytes,2,rep,name=orders,proto3" json:"orders,omitempty"`
+}
+
+func (x *Order) Reset() {
+	*x = Order{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_CPUser_user_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Order) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Order) ProtoMessage() {}
+
+func (x *Order) ProtoReflect() protoreflect.Message {
+	mi := &file_CPUser_user_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Order.ProtoReflect.Descriptor instead.
+func (*Order) Descriptor() ([]byte, []int) {
+	return file_CPUser_user_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *Order) GetRestName() string {
+	if x != nil {
+		return x.RestName
+	}
+	return ""
+}
+
+func (x *Order) GetOrders() []*OrderItem {
+	if x != nil {
+		return x.Orders
+	}
+	return nil
+}
+
+type PaymentCard struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Fname string `protobuf:"bytes,1,opt,name=fname,proto3" json:"fname,omitempty"`
+	Lname string `protobuf:"bytes,2,opt,name=lname,proto3" json:"lname,omitempty"`
+	Num   string `protobuf:"bytes,3,opt,name=num,proto3" json:"num,omitempty"`
+	Cvv   int32  `protobuf:"varint,4,opt,name=cvv,proto3" json:"cvv,omitempty"`
+	Exp   string `protobuf:"bytes,5,opt,name=exp,proto3" json:"exp,omitempty"`
+}
+
+func (x *PaymentCard) Reset() {
+	*x = PaymentCard{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_CPUser_user_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PaymentCard) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PaymentCard) ProtoMessage() {}
+
+func (x *PaymentCard) ProtoReflect() protoreflect.Message {
+	mi := &file_CPUser_user_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PaymentCard.ProtoReflect.Descriptor instead.
+func (*PaymentCard) Descriptor() ([]byte, []int) {
+	return file_CPUser_user_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *PaymentCard) GetFname() string {
+	if x != nil {
+		return x.Fname
+	}
+	return ""
+}
+
+func (x *PaymentCard) GetLname() string {
+	if x != nil {
+		return x.Lname
+	}
+	return ""
+}
+
+func (x *PaymentCard) GetNum() string {
+	if x != nil {
+		return x.Num
+	}
+	return ""
+}
+
+func (x *PaymentCard) GetCvv() int32 {
+	if x != nil {
+		return x.Cvv
+	}
+	return 0
+}
+
+func (x *PaymentCard) GetExp() string {
+	if x != nil {
+		return x.Exp
 	}
 	return ""
 }
@@ -422,36 +759,76 @@ var file_CPUser_user_proto_rawDesc = []byte{
 	0x01, 0x28, 0x09, 0x52, 0x09, 0x41, 0x75, 0x74, 0x68, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x28,
 	0x0a, 0x10, 0x41, 0x75, 0x74, 0x68, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x05, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x73, 0x0a, 0x14, 0x4f, 0x72, 0x64, 0x65,
-	0x72, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x12, 0x3a, 0x0a, 0x0b, 0x41, 0x75, 0x74, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x41,
-	0x75, 0x74, 0x68, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52,
-	0x0b, 0x41, 0x75, 0x74, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1f, 0x0a, 0x0b,
-	0x74, 0x61, 0x62, 0x6c, 0x65, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x0a, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x32, 0x96, 0x02,
-	0x0a, 0x06, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x12, 0x44, 0x0a, 0x0a, 0x43, 0x72, 0x65, 0x61,
-	0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x12, 0x19, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e,
-	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x19, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x54,
-	0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x44,
-	0x0a, 0x0a, 0x52, 0x65, 0x41, 0x75, 0x74, 0x68, 0x55, 0x73, 0x65, 0x72, 0x12, 0x19, 0x2e, 0x43,
-	0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x52, 0x65, 0x41, 0x75, 0x74, 0x68, 0x55, 0x73, 0x65, 0x72,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72,
-	0x2e, 0x41, 0x75, 0x74, 0x68, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x22, 0x00, 0x12, 0x48, 0x0a, 0x0f, 0x53, 0x4d, 0x53, 0x56, 0x65, 0x72, 0x69, 0x66,
-	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72,
-	0x2e, 0x56, 0x65, 0x72, 0x69, 0x66, 0x79, 0x53, 0x4d, 0x53, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x19, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x54,
-	0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x36,
-	0x0a, 0x04, 0x50, 0x69, 0x6e, 0x67, 0x12, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x14,
-	0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x50, 0x6f, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x34, 0x5a, 0x32, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x6f, 0x70, 0x69, 0x31, 0x38, 0x31, 0x2f, 0x43, 0x68, 0x65,
-	0x63, 0x6b, 0x50, 0x6c, 0x65, 0x61, 0x73, 0x65, 0x2d, 0x55, 0x73, 0x65, 0x72, 0x2d, 0x42, 0x61,
-	0x63, 0x6b, 0x65, 0x6e, 0x64, 0x2f, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x09, 0x52, 0x05, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x7d, 0x0a, 0x15, 0x50, 0x61, 0x79, 0x6d,
+	0x65, 0x6e, 0x74, 0x41, 0x64, 0x64, 0x43, 0x61, 0x72, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x12, 0x3b, 0x0a, 0x0c, 0x61, 0x75, 0x74, 0x68, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72,
+	0x2e, 0x41, 0x75, 0x74, 0x68, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x52, 0x0b, 0x61, 0x75, 0x74, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x27,
+	0x0a, 0x04, 0x63, 0x61, 0x72, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x43,
+	0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x50, 0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x43, 0x61, 0x72,
+	0x64, 0x52, 0x04, 0x63, 0x61, 0x72, 0x64, 0x22, 0x18, 0x0a, 0x16, 0x50, 0x61, 0x79, 0x6d, 0x65,
+	0x6e, 0x74, 0x41, 0x64, 0x64, 0x43, 0x61, 0x72, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x74, 0x0a, 0x14, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61,
+	0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x3b, 0x0a, 0x0c, 0x61, 0x75, 0x74,
+	0x68, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x18, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x54, 0x6f, 0x6b,
+	0x65, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x0b, 0x61, 0x75, 0x74, 0x68, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x5f,
+	0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x74, 0x61, 0x62,
+	0x6c, 0x65, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x3c, 0x0a, 0x15, 0x4f, 0x72, 0x64, 0x65, 0x72,
+	0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x23, 0x0a, 0x05, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x0d, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x52, 0x05,
+	0x6f, 0x72, 0x64, 0x65, 0x72, 0x22, 0x47, 0x0a, 0x09, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x49, 0x74,
+	0x65, 0x6d, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x63, 0x6f,
+	0x73, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x02, 0x52, 0x04, 0x63, 0x6f, 0x73, 0x74, 0x22, 0x4f,
+	0x0a, 0x05, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12, 0x1b, 0x0a, 0x09, 0x72, 0x65, 0x73, 0x74, 0x5f,
+	0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x72, 0x65, 0x73, 0x74,
+	0x4e, 0x61, 0x6d, 0x65, 0x12, 0x29, 0x0a, 0x06, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x73, 0x18, 0x02,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x4f, 0x72,
+	0x64, 0x65, 0x72, 0x49, 0x74, 0x65, 0x6d, 0x52, 0x06, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x73, 0x22,
+	0x6f, 0x0a, 0x0b, 0x50, 0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x43, 0x61, 0x72, 0x64, 0x12, 0x14,
+	0x0a, 0x05, 0x66, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x66,
+	0x6e, 0x61, 0x6d, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x05, 0x6c, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x6e, 0x75,
+	0x6d, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6e, 0x75, 0x6d, 0x12, 0x10, 0x0a, 0x03,
+	0x63, 0x76, 0x76, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x03, 0x63, 0x76, 0x76, 0x12, 0x10,
+	0x0a, 0x03, 0x65, 0x78, 0x70, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x65, 0x78, 0x70,
+	0x32, 0xbb, 0x03, 0x0a, 0x06, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x12, 0x44, 0x0a, 0x0a, 0x43,
+	0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x12, 0x19, 0x2e, 0x43, 0x50, 0x55, 0x73,
+	0x65, 0x72, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x41, 0x75,
+	0x74, 0x68, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x00, 0x12, 0x44, 0x0a, 0x0a, 0x52, 0x65, 0x41, 0x75, 0x74, 0x68, 0x55, 0x73, 0x65, 0x72, 0x12,
+	0x19, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x52, 0x65, 0x41, 0x75, 0x74, 0x68, 0x55,
+	0x73, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x43, 0x50, 0x55,
+	0x73, 0x65, 0x72, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x48, 0x0a, 0x0f, 0x53, 0x4d, 0x53, 0x56, 0x65,
+	0x72, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x2e, 0x43, 0x50, 0x55,
+	0x73, 0x65, 0x72, 0x2e, 0x56, 0x65, 0x72, 0x69, 0x66, 0x79, 0x53, 0x4d, 0x53, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x41, 0x75,
+	0x74, 0x68, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x00, 0x12, 0x51, 0x0a, 0x0e, 0x50, 0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x41, 0x64, 0x64, 0x43,
+	0x61, 0x72, 0x64, 0x12, 0x1d, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x50, 0x61, 0x79,
+	0x6d, 0x65, 0x6e, 0x74, 0x41, 0x64, 0x64, 0x43, 0x61, 0x72, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x50, 0x61, 0x79, 0x6d,
+	0x65, 0x6e, 0x74, 0x41, 0x64, 0x64, 0x43, 0x61, 0x72, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x22, 0x00, 0x12, 0x50, 0x0a, 0x0f, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x49, 0x6e, 0x69,
+	0x74, 0x69, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1c, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72,
+	0x2e, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x74, 0x65, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1d, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e, 0x4f,
+	0x72, 0x64, 0x65, 0x72, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x36, 0x0a, 0x04, 0x50, 0x69, 0x6e, 0x67, 0x12, 0x16,
+	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
+	0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x14, 0x2e, 0x43, 0x50, 0x55, 0x73, 0x65, 0x72, 0x2e,
+	0x50, 0x6f, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x34,
+	0x5a, 0x32, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x6f, 0x70,
+	0x69, 0x31, 0x38, 0x31, 0x2f, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x50, 0x6c, 0x65, 0x61, 0x73, 0x65,
+	0x2d, 0x55, 0x73, 0x65, 0x72, 0x2d, 0x42, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x2f, 0x43, 0x50,
+	0x55, 0x73, 0x65, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -466,32 +843,46 @@ func file_CPUser_user_proto_rawDescGZIP() []byte {
 	return file_CPUser_user_proto_rawDescData
 }
 
-var file_CPUser_user_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_CPUser_user_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_CPUser_user_proto_goTypes = []interface{}{
-	(*PongResponse)(nil),         // 0: CPUser.PongResponse
-	(*CreateUserRequest)(nil),    // 1: CPUser.CreateUserRequest
-	(*VerifySMSRequest)(nil),     // 2: CPUser.VerifySMSRequest
-	(*ReAuthUserRequest)(nil),    // 3: CPUser.ReAuthUserRequest
-	(*AuthTokenResponse)(nil),    // 4: CPUser.AuthTokenResponse
-	(*AuthTokenRequest)(nil),     // 5: CPUser.AuthTokenRequest
-	(*OrderInitiateRequest)(nil), // 6: CPUser.OrderInitiateRequest
-	(*empty.Empty)(nil),          // 7: google.protobuf.Empty
+	(*PongResponse)(nil),           // 0: CPUser.PongResponse
+	(*CreateUserRequest)(nil),      // 1: CPUser.CreateUserRequest
+	(*VerifySMSRequest)(nil),       // 2: CPUser.VerifySMSRequest
+	(*ReAuthUserRequest)(nil),      // 3: CPUser.ReAuthUserRequest
+	(*AuthTokenResponse)(nil),      // 4: CPUser.AuthTokenResponse
+	(*AuthTokenRequest)(nil),       // 5: CPUser.AuthTokenRequest
+	(*PaymentAddCardRequest)(nil),  // 6: CPUser.PaymentAddCardRequest
+	(*PaymentAddCardResponse)(nil), // 7: CPUser.PaymentAddCardResponse
+	(*OrderInitiateRequest)(nil),   // 8: CPUser.OrderInitiateRequest
+	(*OrderInitiateResponse)(nil),  // 9: CPUser.OrderInitiateResponse
+	(*OrderItem)(nil),              // 10: CPUser.OrderItem
+	(*Order)(nil),                  // 11: CPUser.Order
+	(*PaymentCard)(nil),            // 12: CPUser.PaymentCard
+	(*empty.Empty)(nil),            // 13: google.protobuf.Empty
 }
 var file_CPUser_user_proto_depIdxs = []int32{
-	5, // 0: CPUser.OrderInitiateRequest.AuthRequest:type_name -> CPUser.AuthTokenRequest
-	1, // 1: CPUser.CPUser.CreateUser:input_type -> CPUser.CreateUserRequest
-	3, // 2: CPUser.CPUser.ReAuthUser:input_type -> CPUser.ReAuthUserRequest
-	2, // 3: CPUser.CPUser.SMSVerification:input_type -> CPUser.VerifySMSRequest
-	7, // 4: CPUser.CPUser.Ping:input_type -> google.protobuf.Empty
-	4, // 5: CPUser.CPUser.CreateUser:output_type -> CPUser.AuthTokenResponse
-	4, // 6: CPUser.CPUser.ReAuthUser:output_type -> CPUser.AuthTokenResponse
-	4, // 7: CPUser.CPUser.SMSVerification:output_type -> CPUser.AuthTokenResponse
-	0, // 8: CPUser.CPUser.Ping:output_type -> CPUser.PongResponse
-	5, // [5:9] is the sub-list for method output_type
-	1, // [1:5] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	5,  // 0: CPUser.PaymentAddCardRequest.auth_request:type_name -> CPUser.AuthTokenRequest
+	12, // 1: CPUser.PaymentAddCardRequest.card:type_name -> CPUser.PaymentCard
+	5,  // 2: CPUser.OrderInitiateRequest.auth_request:type_name -> CPUser.AuthTokenRequest
+	11, // 3: CPUser.OrderInitiateResponse.order:type_name -> CPUser.Order
+	10, // 4: CPUser.Order.orders:type_name -> CPUser.OrderItem
+	1,  // 5: CPUser.CPUser.CreateUser:input_type -> CPUser.CreateUserRequest
+	3,  // 6: CPUser.CPUser.ReAuthUser:input_type -> CPUser.ReAuthUserRequest
+	2,  // 7: CPUser.CPUser.SMSVerification:input_type -> CPUser.VerifySMSRequest
+	6,  // 8: CPUser.CPUser.PaymentAddCard:input_type -> CPUser.PaymentAddCardRequest
+	8,  // 9: CPUser.CPUser.OrderInitiation:input_type -> CPUser.OrderInitiateRequest
+	13, // 10: CPUser.CPUser.Ping:input_type -> google.protobuf.Empty
+	4,  // 11: CPUser.CPUser.CreateUser:output_type -> CPUser.AuthTokenResponse
+	4,  // 12: CPUser.CPUser.ReAuthUser:output_type -> CPUser.AuthTokenResponse
+	4,  // 13: CPUser.CPUser.SMSVerification:output_type -> CPUser.AuthTokenResponse
+	7,  // 14: CPUser.CPUser.PaymentAddCard:output_type -> CPUser.PaymentAddCardResponse
+	9,  // 15: CPUser.CPUser.OrderInitiation:output_type -> CPUser.OrderInitiateResponse
+	0,  // 16: CPUser.CPUser.Ping:output_type -> CPUser.PongResponse
+	11, // [11:17] is the sub-list for method output_type
+	5,  // [5:11] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_CPUser_user_proto_init() }
@@ -573,7 +964,79 @@ func file_CPUser_user_proto_init() {
 			}
 		}
 		file_CPUser_user_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PaymentAddCardRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_CPUser_user_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PaymentAddCardResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_CPUser_user_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*OrderInitiateRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_CPUser_user_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*OrderInitiateResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_CPUser_user_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*OrderItem); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_CPUser_user_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Order); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_CPUser_user_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PaymentCard); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -591,7 +1054,7 @@ func file_CPUser_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_CPUser_user_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -617,10 +1080,14 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type CPUserClient interface {
-	//  rpc Login (LoginRequest) returns (LoginReponse) {}
+	// Create User Auth, etc
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*AuthTokenResponse, error)
 	ReAuthUser(ctx context.Context, in *ReAuthUserRequest, opts ...grpc.CallOption) (*AuthTokenResponse, error)
 	SMSVerification(ctx context.Context, in *VerifySMSRequest, opts ...grpc.CallOption) (*AuthTokenResponse, error)
+	// Payment
+	PaymentAddCard(ctx context.Context, in *PaymentAddCardRequest, opts ...grpc.CallOption) (*PaymentAddCardResponse, error)
+	// Order Info
+	OrderInitiation(ctx context.Context, in *OrderInitiateRequest, opts ...grpc.CallOption) (*OrderInitiateResponse, error)
 	//misc
 	Ping(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*PongResponse, error)
 }
@@ -660,6 +1127,24 @@ func (c *cPUserClient) SMSVerification(ctx context.Context, in *VerifySMSRequest
 	return out, nil
 }
 
+func (c *cPUserClient) PaymentAddCard(ctx context.Context, in *PaymentAddCardRequest, opts ...grpc.CallOption) (*PaymentAddCardResponse, error) {
+	out := new(PaymentAddCardResponse)
+	err := c.cc.Invoke(ctx, "/CPUser.CPUser/PaymentAddCard", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cPUserClient) OrderInitiation(ctx context.Context, in *OrderInitiateRequest, opts ...grpc.CallOption) (*OrderInitiateResponse, error) {
+	out := new(OrderInitiateResponse)
+	err := c.cc.Invoke(ctx, "/CPUser.CPUser/OrderInitiation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *cPUserClient) Ping(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*PongResponse, error) {
 	out := new(PongResponse)
 	err := c.cc.Invoke(ctx, "/CPUser.CPUser/Ping", in, out, opts...)
@@ -671,10 +1156,14 @@ func (c *cPUserClient) Ping(ctx context.Context, in *empty.Empty, opts ...grpc.C
 
 // CPUserServer is the server API for CPUser service.
 type CPUserServer interface {
-	//  rpc Login (LoginRequest) returns (LoginReponse) {}
+	// Create User Auth, etc
 	CreateUser(context.Context, *CreateUserRequest) (*AuthTokenResponse, error)
 	ReAuthUser(context.Context, *ReAuthUserRequest) (*AuthTokenResponse, error)
 	SMSVerification(context.Context, *VerifySMSRequest) (*AuthTokenResponse, error)
+	// Payment
+	PaymentAddCard(context.Context, *PaymentAddCardRequest) (*PaymentAddCardResponse, error)
+	// Order Info
+	OrderInitiation(context.Context, *OrderInitiateRequest) (*OrderInitiateResponse, error)
 	//misc
 	Ping(context.Context, *empty.Empty) (*PongResponse, error)
 }
@@ -691,6 +1180,12 @@ func (*UnimplementedCPUserServer) ReAuthUser(context.Context, *ReAuthUserRequest
 }
 func (*UnimplementedCPUserServer) SMSVerification(context.Context, *VerifySMSRequest) (*AuthTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SMSVerification not implemented")
+}
+func (*UnimplementedCPUserServer) PaymentAddCard(context.Context, *PaymentAddCardRequest) (*PaymentAddCardResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PaymentAddCard not implemented")
+}
+func (*UnimplementedCPUserServer) OrderInitiation(context.Context, *OrderInitiateRequest) (*OrderInitiateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OrderInitiation not implemented")
 }
 func (*UnimplementedCPUserServer) Ping(context.Context, *empty.Empty) (*PongResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
@@ -754,6 +1249,42 @@ func _CPUser_SMSVerification_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CPUser_PaymentAddCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PaymentAddCardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CPUserServer).PaymentAddCard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/CPUser.CPUser/PaymentAddCard",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CPUserServer).PaymentAddCard(ctx, req.(*PaymentAddCardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CPUser_OrderInitiation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OrderInitiateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CPUserServer).OrderInitiation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/CPUser.CPUser/OrderInitiation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CPUserServer).OrderInitiation(ctx, req.(*OrderInitiateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CPUser_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(empty.Empty)
 	if err := dec(in); err != nil {
@@ -787,6 +1318,14 @@ var _CPUser_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SMSVerification",
 			Handler:    _CPUser_SMSVerification_Handler,
+		},
+		{
+			MethodName: "PaymentAddCard",
+			Handler:    _CPUser_PaymentAddCard_Handler,
+		},
+		{
+			MethodName: "OrderInitiation",
+			Handler:    _CPUser_OrderInitiation_Handler,
 		},
 		{
 			MethodName: "Ping",

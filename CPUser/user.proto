@@ -4,7 +4,9 @@ package CPUser;
 
 import "google/protobuf/empty.proto";
 
-
+// ######### TODOS FOR THIS FILE ##################
+// 1. Ensure transition from pass -> sms verification is ironed out
+// 2. Credit card types could be better (does exp date need to be a string? no)
 
 service CPUser {
 //  rpc Login (LoginRequest) returns (LoginReponse) {}
@@ -14,6 +16,10 @@ service CPUser {
   rpc ReAuthUser (ReAuthUserRequest) returns (AuthTokenResponse) {}
   rpc SMSVerification (VerifySMSRequest) returns (AuthTokenResponse) {}
 
+  // # Payment #
+
+  //Maybe wont use this
+  rpc PaymentAddCard (PaymentAddCardRequest) returns (PaymentAddCardResponse) {}
 
   // Order Info
   rpc OrderInitiation (OrderInitiateRequest) returns (OrderInitiateResponse) {}
@@ -51,9 +57,22 @@ message AuthTokenRequest {
 
 
 
+// ###### PAY #######
+message PaymentAddCardRequest {
+    AuthTokenRequest auth_request = 1;
+    PaymentCard card = 2;
+}
+
+message PaymentAddCardResponse {
+
+}
+
+
+
+// ###### ORDERS ######
 
 message OrderInitiateRequest {
-  AuthTokenRequest AuthRequest = 1;
+  AuthTokenRequest auth_request = 1;
   string table_token = 2;
 }
 
@@ -62,7 +81,7 @@ message OrderInitiateResponse {
 }
 
 
-// types (idk custom message types)
+// ###### TYPES (idk custom messages that are used as subfields) ######
 
 message OrderItem  {
   string name = 1;
@@ -73,4 +92,12 @@ message OrderItem  {
 message Order {
   string rest_name = 1;
   repeated OrderItem orders = 2;
+}
+
+message PaymentCard {
+  string fname = 1;
+  string lname = 2;
+  string num = 3;
+  int32 cvv = 4;
+  string exp = 5;
 }

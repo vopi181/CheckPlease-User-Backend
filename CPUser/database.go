@@ -136,3 +136,34 @@ func DBGetTextVerificationToken(in *VerifySMSRequest) (string, error) {
 
 	return DBSMSVerificationToken, nil;
 }
+
+// ###### PAYMENT ######
+func DBPaymentAddCard(in *PaymentAddCardRequest) error {
+	stmt, err := db.Prepare("INSERT INTO payinfo(fname, lname, num, cvv, exp, phone) VALUES($1,$2,$3,$4,$5,$6)")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pn, err := DBAuthTokenToPhone(in.AuthRequest.Token)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(in.Card.Fname,in.Card.Lname,in.Card.Num,in.Card.Cvv,in.Card.Exp,pn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return nil
+}
+
+
+// ###### HELPERS ######
+func DBAuthTokenToPhone(tok string) (string, error) {
+	var DBPhone string
+	err := db.QueryRow(`SELECT phone FROM users WHERE auth_token=$1`, tok).Scan(&DBPhone)
+	if err != nil {
+		return "", err
+	}
+
+	return DBPhone, nil
+}
