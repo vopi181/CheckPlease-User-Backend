@@ -23,7 +23,7 @@ func random(length int) (string, error) {
 	return string(bytes), nil
 }
 
-func GenerateAuthToken(username string) string {
+func GenerateAuthToken(phone string) string {
 	tok, err := random(TOKEN_LENGTH)
 	if(err != nil) {
 		log.Fatal(err)

@@ -8,10 +8,15 @@ import "google/protobuf/empty.proto";
 
 service CPUser {
 //  rpc Login (LoginRequest) returns (LoginReponse) {}
+
+  // Create User Auth, etc
   rpc CreateUser (CreateUserRequest) returns (AuthTokenResponse) {}
   rpc ReAuthUser (ReAuthUserRequest) returns (AuthTokenResponse) {}
+  rpc SMSVerification (VerifySMSRequest) returns (AuthTokenResponse) {}
 
 
+  // Order Info
+  rpc OrderInitiation (OrderInitiateRequest) returns (OrderInitiateResponse) {}
   //misc
   rpc Ping (google.protobuf.Empty) returns (PongResponse) {}
 }
@@ -21,14 +26,18 @@ message PongResponse {
 }
 
 message CreateUserRequest {
-  string username = 1;
-  string password = 2;
-  string email = 3;
+  string phone = 1;
+  string fname = 2;
+  string lname = 3;
+}
+
+message VerifySMSRequest {
+  string phone = 1;
+  string SMSVerificationToken = 2;
 }
 
 message ReAuthUserRequest {
-  string username = 1;
-  string password = 2;
+  string phone = 1;
 }
 
 message AuthTokenResponse {
@@ -40,8 +49,28 @@ message AuthTokenRequest {
   string Token = 1;
 }
 
-// Not used yet
+
+
+
 message OrderInitiateRequest {
   AuthTokenRequest AuthRequest = 1;
-  string OrderId = 2;
+  string table_token = 2;
+}
+
+message OrderInitiateResponse {
+  Order order = 1;
+}
+
+
+// types (idk custom message types)
+
+message OrderItem  {
+  string name = 1;
+  string type = 2;
+  float  cost = 3;
+}
+
+message Order {
+  string rest_name = 1;
+  repeated OrderItem orders = 2;
 }
