@@ -33,6 +33,14 @@ func main() {
 		os.Exit(0);
 	}
 
+	err = CPUser.DBPing()
+	if err != nil {
+		fmt.Println("Couldnt connect to DB. Make sure a DB is running and creds are correct")
+		fmt.Errorf("%v", err.Error())
+		os.Exit(0);
+	}
+	fmt.Println("Connected to DB")
+
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}

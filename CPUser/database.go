@@ -175,3 +175,11 @@ func DBAuthTokenToPhone(tok string) (string, error) {
 //		return "", err
 //	}
 //}
+
+func DBPing() error {
+	err := db.Ping()
+	if err != nil {
+		return err
+	}
+	return nil
+}
