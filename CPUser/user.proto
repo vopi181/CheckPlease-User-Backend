@@ -22,7 +22,7 @@ service CPUser {
   rpc PaymentAddCard (PaymentAddCardRequest) returns (PaymentAddCardResponse) {}
 
   // Order Info
-  rpc OrderInitiation (OrderInitiateRequest) returns (OrderInitiateResponse) {}
+//  rpc OrderInitiation (OrderInitiateRequest) returns (OrderInitiateResponse) {}
   //misc
   rpc Ping (google.protobuf.Empty) returns (PongResponse) {}
 }

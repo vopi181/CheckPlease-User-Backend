@@ -167,3 +167,11 @@ func DBAuthTokenToPhone(tok string) (string, error) {
 
 	return DBPhone, nil
 }
+
+//func DBAuthTokenCompare(tok string) (bool, error) {
+//	var DBAuthToken string
+//	err := db.QueryRow(`SELECT auth_token FROM users WHERE auth_token=$1`, tok).Scan(&DBAuthToken)
+//	if err != nil {
+//		return "", err
+//	}
+//}

@@ -100,6 +100,15 @@ func (s *Server) ReAuthUser(ctx context.Context, in *ReAuthUserRequest) (*AuthTo
 }
 
 
+func (s *Server) PaymentAddCard(ctx context.Context, in *PaymentAddCardRequest) (*PaymentAddCardResponse, error) {
+	err := DBPaymentAddCard(in)
+	if err != nil {
+		return nil, err
+	}
+	return &PaymentAddCardResponse{}, nil
+}
+
+
 
 // Simple Ping -> Pong  sanity check
 func (s *Server) Ping(ctx context.Context, in *emptypb.Empty) (*PongResponse, error) {
