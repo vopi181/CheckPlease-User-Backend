@@ -16,13 +16,15 @@ service CPUser {
   rpc ReAuthUser (ReAuthUserRequest) returns (AuthTokenResponse) {}
   rpc SMSVerification (VerifySMSRequest) returns (AuthTokenResponse) {}
 
+
+  rpc GetUserInfo (AuthTokenRequest) returns (UserInfoResponse) {}
   // # Payment #
 
   //Maybe wont use this
   rpc PaymentAddCard (PaymentAddCardRequest) returns (PaymentAddCardResponse) {}
 
   // Order Info
-//  rpc OrderInitiation (OrderInitiateRequest) returns (OrderInitiateResponse) {}
+  rpc OrderInitiation (OrderInitiateRequest) returns (OrderInitiateResponse) {}
   //misc
   rpc Ping (google.protobuf.Empty) returns (PongResponse) {}
 }
@@ -56,6 +58,13 @@ message AuthTokenRequest {
 }
 
 
+message UserInfoResponse {
+  string fname = 1;
+  string lname = 2;
+  string pn = 3;
+  PaymentCard pc = 4;
+}
+
 
 // ###### PAY #######
 message PaymentAddCardRequest {
@@ -87,11 +96,16 @@ message OrderItem  {
   string name = 1;
   string type = 2;
   float  cost = 3;
+  int64    id = 4;
+  bool   paid_for = 5;
+  int64  total_splits = 6;
+
 }
 
 message Order {
   string rest_name = 1;
-  repeated OrderItem orders = 2;
+  int64 order_id = 2;
+  repeated OrderItem orders = 3;
 }
 
 message PaymentCard {

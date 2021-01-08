@@ -137,7 +137,46 @@ func DBGetTextVerificationToken(in *VerifySMSRequest) (string, error) {
 	return DBSMSVerificationToken, nil;
 }
 
+
+//@TODO: Get user info
+func DBGetUserInfo(in *AuthTokenRequest) (*UserInfoResponse, error) {
+	var fname string;
+	var lname string;
+	var pn string;
+
+	//ccs
+	//var ccfname string
+	//var cclname string
+	//var num string
+	//var cvv int32
+	//var exp string
+
+
+	err := db.QueryRow(`SELECT fname, lname, phone FROM users WHERE auth_token=$1`,
+		in.Token).Scan(&fname, &lname, &pn)
+	if err != nil {
+		// handle this error better than this
+		return &UserInfoResponse{}, err
+	}
+	//err = db.QueryRow(`SELECT fname, lname, cvv, exp FROM users WHERE num=$1`,
+	//	num).Scan(&ccfname, &cclname, &cvv, &exp)
+	//if err != nil {
+	//	// handle this error better than this
+	//	return &UserInfoResponse{}, err
+	//}
+
+	pc := &PaymentCard{Fname: "", Lname: "", Num: "",
+		Cvv: 0, Exp: "" }
+
+	return &UserInfoResponse{Fname: fname, Lname: lname, Pn: pn,
+		Pc: pc}, nil
+
+
+}
+
+
 // ###### PAYMENT ######
+//@TODO: add hanlding of primary  cards
 func DBPaymentAddCard(in *PaymentAddCardRequest) error {
 	stmt, err := db.Prepare("INSERT INTO payinfo(fname, lname, num, cvv, exp, phone) VALUES($1,$2,$3,$4,$5,$6)")
 	if err != nil {
@@ -153,8 +192,73 @@ func DBPaymentAddCard(in *PaymentAddCardRequest) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return nil
 }
+
+
+
+// ###### ORDERS ######
+func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
+	var rest_name string
+	var rest_id int
+	var table_id int
+	var order_id int64
+
+	fmt.Println("Prepping Order")
+	err := db.QueryRow(`SELECT rest_name, rest_id, table_id, order_id FROM tokens WHERE token_code=$1`,
+		in.TableToken).Scan(&rest_name, &rest_id, &table_id, &order_id)
+	if err != nil {
+		// handle this error better than this
+		fmt.Println(in)
+
+		return &OrderInitiateResponse{}, err
+	}
+
+	stmt, err := db.Prepare(`UPDATE users SET current_order=$1 WHERE auth_token=$2`)
+	if err != nil {
+		return &OrderInitiateResponse{}, err
+	}
+
+	_, err = stmt.Exec(order_id,in.AuthRequest.Token)
+	if err != nil {
+		return &OrderInitiateResponse{}, err
+	}
+
+	orderitems := []*OrderItem{}
+
+	rows, err := db.Query("SELECT item_name, item_type, item_cost, item_id, paid_for, total_splits FROM orderitems where order_id=$1", order_id)
+	if err != nil {
+		// handle this error better than this
+		return &OrderInitiateResponse{}, err
+	}
+	defer rows.Close()
+	// Iterate through rows  in DB
+	for rows.Next() {
+		fmt.Println("Iterating rows")
+		var item_name string
+		var item_type string
+		var item_cost float32
+		var item_id int64
+		var paid_for bool
+		var total_splits int64
+		err = rows.Scan(&item_name, &item_type, &item_cost, &item_id, &paid_for, &total_splits)
+		if err != nil {
+			return &OrderInitiateResponse{}, err
+		}
+		orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits})
+
+	}
+	err = rows.Err()
+	if err != nil {
+		return &OrderInitiateResponse{}, err
+	}
+
+	ord := &Order{RestName: rest_name, OrderId: order_id, Orders: orderitems}
+	return &OrderInitiateResponse{Order: ord}, nil
+
+}
+
 
 
 // ###### HELPERS ######
@@ -175,6 +279,8 @@ func DBAuthTokenToPhone(tok string) (string, error) {
 //		return "", err
 //	}
 //}
+
+
 
 func DBPing() error {
 	err := db.Ping()

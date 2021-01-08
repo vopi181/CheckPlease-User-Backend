@@ -105,8 +105,30 @@ func (s *Server) PaymentAddCard(ctx context.Context, in *PaymentAddCardRequest) 
 	if err != nil {
 		return nil, err
 	}
+
 	return &PaymentAddCardResponse{}, nil
 }
+
+func (s *Server) GetUserInfo(ctx context.Context, in *AuthTokenRequest) (*UserInfoResponse, error) {
+	UIR, err := DBGetUserInfo(in)
+	if err != nil {
+		return nil, err
+	}
+
+	return UIR, nil
+}
+
+
+// ORDERS
+func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
+	OIR, err := DBPrepOrder(in)
+	if err != nil {
+		return nil, err
+	}
+	return OIR, nil
+}
+
+
 
 
 

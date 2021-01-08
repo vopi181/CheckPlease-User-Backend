@@ -36,6 +36,10 @@ create table ORDERITEMS (
     order_id INT,
     item_name TEXT,
     item_type TEXT,
-    item_cost FLOAT
+    item_cost FLOAT,
+    item_id SERIAL,
+    paid_for BOOL,
+    total_splits INT
+
 )
 
