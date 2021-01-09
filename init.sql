@@ -32,6 +32,7 @@ create table ORDERS (
     order_id INT
 );
 
+/* @TODO: paid_by should be an array or smth of that nature. obvs not array its a DB but yeah*/
 create table ORDERITEMS (
     order_id INT,
     item_name TEXT,
