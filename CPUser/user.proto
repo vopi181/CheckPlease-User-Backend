@@ -65,7 +65,7 @@ message UserInfoResponse {
   string fname = 1;
   string lname = 2;
   string pn = 3;
-  PaymentCard pc = 4;
+  //PaymentCard pc = 4;
 }
 
 
