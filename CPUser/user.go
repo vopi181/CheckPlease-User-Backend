@@ -128,6 +128,13 @@ func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) 
 	return OIR, nil
 }
 
+func (s* Server) OrderPay(ctx context.Context, in *OrderPayRequest) (*OrderPayResponse, error) {
+	OPR, err := DBPayItem(in)
+	if err != nil {
+		return nil, err
+	}
+	return OPR, nil
+}
 
 
 

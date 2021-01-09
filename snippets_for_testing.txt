@@ -1,0 +1,14 @@
+INSERT INTO tokens(token_code, rest_name, rest_id) VALUES ()
+
+
+insert into orderitems(order_id, item_name, item_type, item_cost, paid_for, total_splits, paid_by) values(1, 'Spaghetti Bolognese', 'FOOD', 15.0, false, 0, '')
+
+Spaghetti Bolognese
+Mozzarella Marinara
+Caesar Salad
+Mom's Lasagna
+
+
+
+Sauvignon Blanc
+Coca Cola

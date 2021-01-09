@@ -235,7 +235,7 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 	defer rows.Close()
 	// Iterate through rows  in DB
 	for rows.Next() {
-		fmt.Println("Iterating rows")
+		fmt.Println("Iterating order item rows")
 		var item_name string
 		var item_type string
 		var item_cost float32
@@ -246,6 +246,7 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 		if err != nil {
 			return &OrderInitiateResponse{}, err
 		}
+
 		orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits})
 
 	}
@@ -253,13 +254,50 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 	if err != nil {
 		return &OrderInitiateResponse{}, err
 	}
-
 	ord := &Order{RestName: rest_name, OrderId: order_id, Orders: orderitems}
+
 	return &OrderInitiateResponse{Order: ord}, nil
 
 }
+//@TODO: HANDLE PAYMENTS!!!!!!!!!!!!!!
+func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
+	//handle payment
 
 
+	// update db
+
+
+
+	var total_splits int64
+	var current_cost float64
+	err := db.QueryRow(`SELECT total_splits, item_cost FROM orderitems WHERE item_id=$1`,
+		in.ItemPay.Id).Scan(&total_splits, &current_cost)
+	if err != nil {
+		// handle this error better than this
+		return &OrderPayResponse{}, err
+	}
+
+	// temp paid for variable
+	pf := true
+
+	if in.ItemPay.Split {
+		total_splits = total_splits + 1
+		pf = false
+	}
+
+
+	stmt, err := db.Prepare(`UPDATE orderitems SET paid_for=$1, total_splits=$2, paid_by=$3 WHERE item_id=$4`)
+	if err != nil {
+		return &OrderPayResponse{}, err
+	}
+
+	_, err = stmt.Exec(pf, total_splits, in.AuthRequest.Token, in.ItemPay.Id)
+	if err != nil {
+		return &OrderPayResponse{}, err
+	}
+
+	return &OrderPayResponse{Accepted: true}, nil
+}
 
 // ###### HELPERS ######
 func DBAuthTokenToPhone(tok string) (string, error) {

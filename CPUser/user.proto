@@ -25,6 +25,8 @@ service CPUser {
 
   // Order Info
   rpc OrderInitiation (OrderInitiateRequest) returns (OrderInitiateResponse) {}
+  rpc OrderPay (OrderPayRequest) returns (OrderPayResponse) {}
+
   //misc
   rpc Ping (google.protobuf.Empty) returns (PongResponse) {}
 }
@@ -89,8 +91,23 @@ message OrderInitiateResponse {
   Order order = 1;
 }
 
+message OrderPayRequest {
+  AuthTokenRequest auth_request = 1;
+  ItemPay item_pay = 2;
+}
+
+message OrderPayResponse {
+  bool accepted = 1;
+}
+
 
 // ###### TYPES (idk custom messages that are used as subfields) ######
+
+message ItemPay {
+  int64 id = 1;
+  PaymentCard pc = 2;
+  bool split = 3;
+}
 
 message OrderItem  {
   string name = 1;
