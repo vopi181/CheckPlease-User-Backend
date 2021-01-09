@@ -1,0 +1,1 @@
+protoc --proto_path=CPUser --dart_out=/home/alex/Programming/cp/Check-Please-App/checkplease/lib/proto CPUser/user.proto
