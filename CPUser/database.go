@@ -165,11 +165,10 @@ func DBGetUserInfo(in *AuthTokenRequest) (*UserInfoResponse, error) {
 	//	return &UserInfoResponse{}, err
 	//}
 
-	pc := &PaymentCard{Fname: "", Lname: "", Num: "",
-		Cvv: 0, Exp: "" }
+	//pc := &PaymentCard{Fname: "", Lname: "", Num: "",
+	//	Cvv: 0, Exp: "" }
 
-	return &UserInfoResponse{Fname: fname, Lname: lname, Pn: pn,
-		Pc: pc}, nil
+	return &UserInfoResponse{Fname: fname, Lname: lname, Pn: pn}, nil
 
 
 }
