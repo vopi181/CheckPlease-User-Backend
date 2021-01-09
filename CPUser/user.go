@@ -118,6 +118,15 @@ func (s *Server) GetUserInfo(ctx context.Context, in *AuthTokenRequest) (*UserIn
 	return UIR, nil
 }
 
+func (s* Server) GetUserOrderHistory(ctx context.Context, in *AuthTokenRequest) (*GetUserOrderHistoryResponse, error) {
+	UOHR, err := DBGetUserOrderHistory(in)
+	if err != nil {
+		return nil, err
+	}
+
+	return UOHR, nil
+}
+
 
 // ORDERS
 func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) (*OrderInitiateResponse, error) {

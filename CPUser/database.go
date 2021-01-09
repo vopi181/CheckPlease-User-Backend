@@ -174,6 +174,43 @@ func DBGetUserInfo(in *AuthTokenRequest) (*UserInfoResponse, error) {
 
 }
 
+func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, error) {
+
+
+	orderitems := []*OrderItem{}
+
+	rows, err := db.Query("SELECT item_name, item_type, item_cost, item_id, paid_for, total_splits FROM orderitems where paid_by=$1", in.Token)
+	if err != nil {
+		// handle this error better than this
+		return &GetUserOrderHistoryResponse{}, err
+	}
+	defer rows.Close()
+	// Iterate through rows  in DB
+	for rows.Next() {
+		fmt.Println("Iterating order item rows")
+		var item_name string
+		var item_type string
+		var item_cost float32
+		var item_id int64
+		var paid_for bool
+		var total_splits int64
+		err = rows.Scan(&item_name, &item_type, &item_cost, &item_id, &paid_for, &total_splits)
+		if err != nil {
+			return &GetUserOrderHistoryResponse{}, err
+		}
+
+		orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits})
+
+	}
+	err = rows.Err()
+	if err != nil {
+		return &GetUserOrderHistoryResponse{}, err
+	}
+
+	return &GetUserOrderHistoryResponse{Orders: orderitems}, nil
+}
+
+
 
 // ###### PAYMENT ######
 //@TODO: add hanlding of primary  cards
