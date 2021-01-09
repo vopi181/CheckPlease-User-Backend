@@ -86,15 +86,15 @@ func (s *Server) SMSVerification(ctx context.Context, in *VerifySMSRequest) (*Au
 //@TODO: update for sms
 func (s *Server) ReAuthUser(ctx context.Context, in *ReAuthUserRequest) (*AuthTokenResponse, error) {
 
-	//err := DBValidateAuth(in)
-	//if err != nil {
-	//	return &AuthTokenResponse{AuthToken: ""}, err
-	//}
-	//tok := GenerateAuthToken(in.Username)
-	//err = DBUpdateAuthToken(tok, in.Username)
-	//if err != nil {
-	//	return nil, err
-	//}
+	SMSVerificationCode, err := phone_auth.SendTextVerification(in.Phone);
+	if(err != nil) {
+		return nil, err;
+	}
+
+	err = DBUpdateTextVerificationToken(in.Phone, SMSVerificationCode)
+	if(err != nil) {
+		return nil, err;
+	}
 
 	return &AuthTokenResponse{AuthToken: ""}, nil
 }
