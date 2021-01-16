@@ -103,7 +103,7 @@ message SelectionContainer {
 }
 
 message SelectionCurrentUsersResponse {
-  repeated SelectionContainer selections = 1;
+  SelectionContainer selections = 1;
 }
 
 
