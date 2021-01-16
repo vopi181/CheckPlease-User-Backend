@@ -90,17 +90,25 @@ message SelectionRequest {
   AuthTokenRequest auth_request = 1;
   int64 id = 2;
   string token_code = 3;
+  bool is_split = 4;
+  bool is_selected = 5;
 }
 
 message SelectionCurrentUsersRequest {
   AuthTokenRequest auth_request = 1;
+  //table token
   string token_code = 2;
 }
 
 message SelectionContainer {
   string fname = 1;
   string lname = 2;
+  //item order
   int64 item_id = 3;
+  //is split?
+  bool is_split = 4;
+  bool is_selected = 5;
+
 }
 
 //message SelectionCurrentUsersResponse {
@@ -149,6 +157,7 @@ message OrderItem  {
   int64    id = 4;
   bool   paid_for = 5;
   int64  total_splits = 6;
+  repeated string paid_by = 7;
 
 }
 
