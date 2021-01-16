@@ -30,7 +30,7 @@ service CPUser {
 
   // Selections
   rpc SelectionClick (SelectionRequest) returns (google.protobuf.Empty) {}
-  rpc SelectionSubscribe (SelectionCurrentUsersRequest) returns (stream SelectionCurrentUsersResponse) {}
+  rpc SelectionSubscribe (SelectionCurrentUsersRequest) returns (stream SelectionContainer) {}
 
   //misc
   rpc Ping (google.protobuf.Empty) returns (PongResponse) {}
@@ -103,9 +103,9 @@ message SelectionContainer {
   int64 item_id = 3;
 }
 
-message SelectionCurrentUsersResponse {
-  SelectionContainer selections = 1;
-}
+//message SelectionCurrentUsersResponse {
+//  SelectionContainer selections = 1;
+//}
 
 
 
