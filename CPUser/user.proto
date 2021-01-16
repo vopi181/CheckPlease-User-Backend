@@ -89,7 +89,7 @@ message PaymentAddCardResponse {
 message SelectionRequest {
   AuthTokenRequest auth_request = 1;
   int64 id = 2;
-  string token = 3;
+  string token_code = 3;
 }
 
 message SelectionCurrentUsersRequest {
