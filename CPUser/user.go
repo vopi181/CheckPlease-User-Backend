@@ -3,6 +3,7 @@ package CPUser
 import (
 	"context"
 	"fmt"
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/vopi181/CheckPlease-User-Backend/CPUser/phone_auth"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -11,7 +12,14 @@ import (
 )
 
 
+type SelectionNotificationChan struct {
+	token_code string;
+	token_selects chan SelectionContainer
+
+}
+
 type Server struct {
+	selects []SelectionNotificationChan;
 }
 
 
@@ -138,6 +146,20 @@ func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) 
 	if err != nil {
 		return nil, err
 	}
+
+	is_chan := false;
+
+	for _, chans := range s.selects {
+		if chans.token_code == in.TableToken {
+			is_chan = true
+			break
+		}
+	}
+
+	if !is_chan {
+		s.selects = append(s.selects, SelectionNotificationChan{token_code: in.TableToken, token_selects: make(chan SelectionContainer)})
+	}
+
 	return OIR, nil
 }
 
@@ -147,6 +169,62 @@ func (s* Server) OrderPay(ctx context.Context, in *OrderPayRequest) (*OrderPayRe
 		return nil, err
 	}
 	return OPR, nil
+}
+
+
+
+
+// Selections
+func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emptypb.Empty, error) {
+	//@TODO: DB selection
+	//err := DBSelectionClick(in);
+	//if err != nil {
+	//	return err
+	//}
+
+	fname, lname, err := DBAuthTokenToFirstLastName(in.AuthRequest.Token);
+	if err != nil {
+		return &empty.Empty{}, err
+	}
+	cont := SelectionContainer{Fname: fname, Lname: lname, ItemId: in.Id}
+
+
+	log.Print(cont)
+	for _, c := range s.selects {
+		if c.token_code == in.TokenCode {
+			c.token_selects<- cont
+			break
+		}
+	}
+
+	return &empty.Empty{}, nil
+
+}
+
+func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPUser_SelectionSubscribeServer) error {
+
+
+
+	for _, c := range s.selects {
+		if c.token_code == in.TokenCode {
+			for {
+				log.Print("Trying to sub")
+				cont := <-c.token_selects
+				log.Printf("Got this from chan: %v", cont)
+				if err := stream.Send(&cont); err != nil {
+					c.token_selects<- cont
+					log.Printf("Stream connection failed: %v", err)
+					return nil
+				}
+			}
+
+		}
+
+	}
+
+
+
+	return nil;
 }
 
 

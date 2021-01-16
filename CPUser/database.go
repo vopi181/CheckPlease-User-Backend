@@ -335,6 +335,13 @@ func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
 	return &OrderPayResponse{Accepted: true}, nil
 }
 
+
+
+
+// ##### SELECTION #####
+
+
+
 // ###### HELPERS ######
 func DBAuthTokenToPhone(tok string) (string, error) {
 	var DBPhone string
@@ -345,6 +352,16 @@ func DBAuthTokenToPhone(tok string) (string, error) {
 
 	return DBPhone, nil
 }
+
+func DBAuthTokenToFirstLastName(tok string) (string, string, error) {
+	var DBFname, DBLname string
+	err := db.QueryRow(`SELECT fname, lname FROM users WHERE auth_token=$1`, tok).Scan(&DBFname, &DBLname);
+	if err != nil {
+		return "", "", err
+	}
+	return DBFname, DBLname, nil
+}
+
 
 //func DBAuthTokenCompare(tok string) (bool, error) {
 //	var DBAuthToken string

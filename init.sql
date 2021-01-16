@@ -41,7 +41,7 @@ create table ORDERITEMS (
     item_id SERIAL,
     paid_for BOOL,
     total_splits INT,
-    paid_by TEXT
-
+    paid_by TEXT,
+    selected_by TEXT[]
 )
 
