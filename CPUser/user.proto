@@ -28,6 +28,10 @@ service CPUser {
   rpc OrderInitiation (OrderInitiateRequest) returns (OrderInitiateResponse) {}
   rpc OrderPay (OrderPayRequest) returns (OrderPayResponse) {}
 
+  // Selections
+  rpc SelectionClick (SelectionRequest) returns (google.protobuf.Empty) {}
+  rpc SelectionSubscribe (SelectionCurrentUsersRequest) returns (stream SelectionCurrentUsersResponse) {}
+
   //misc
   rpc Ping (google.protobuf.Empty) returns (PongResponse) {}
 }
@@ -77,6 +81,29 @@ message PaymentAddCardRequest {
 
 message PaymentAddCardResponse {
 
+}
+
+
+
+// ####### SELECTION #######
+message SelectionRequest {
+  AuthTokenRequest auth_request = 1;
+  int64 id = 2;
+}
+
+message SelectionCurrentUsersRequest {
+  AuthTokenRequest auth_request = 1;
+  string token_code = 2;
+}
+
+message SelectionContainer {
+  string fname = 1;
+  string lname = 2;
+  int64 item_id = 3;
+}
+
+message SelectionCurrentUsersResponse {
+  repeated SelectionContainer selections = 1;
 }
 
 
@@ -137,3 +164,4 @@ message PaymentCard {
   int32 cvv = 4;
   string exp = 5;
 }
+
