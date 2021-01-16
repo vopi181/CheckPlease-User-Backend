@@ -150,6 +150,7 @@ message ItemPay {
   bool split = 3;
 }
 
+
 message OrderItem  {
   string name = 1;
   string type = 2;
@@ -158,6 +159,8 @@ message OrderItem  {
   bool   paid_for = 5;
   int64  total_splits = 6;
   repeated string paid_by = 7;
+  int64 order_id = 8;
+  repeated string selected_by = 9;
 
 }
 

@@ -13,9 +13,10 @@ import (
 
 
 type SelectionNotificationChan struct {
-	token_code string;
-	token_selects chan SelectionContainer
-
+	tokenCode    string;
+	tokenSelects chan SelectionContainer;
+	//@TODO: Cache selects for late scanning user. Should move to DB.
+	selectCache []SelectionContainer;
 }
 
 type Server struct {
@@ -95,7 +96,7 @@ func (s *Server) SMSVerification(ctx context.Context, in *VerifySMSRequest) (*Au
 
 }
 
-//@TODO: update for sms
+
 func (s *Server) ReAuthUser(ctx context.Context, in *ReAuthUserRequest) (*AuthTokenResponse, error) {
 
 	SMSVerificationCode, err := phone_auth.SendTextVerification(in.Phone);
@@ -150,14 +151,14 @@ func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) 
 	is_chan := false;
 
 	for _, chans := range s.selects {
-		if chans.token_code == in.TableToken {
+		if chans.tokenCode == in.TableToken {
 			is_chan = true
 			break
 		}
 	}
 
 	if !is_chan {
-		s.selects = append(s.selects, SelectionNotificationChan{token_code: in.TableToken, token_selects: make(chan SelectionContainer)})
+		s.selects = append(s.selects, SelectionNotificationChan{tokenCode: in.TableToken, tokenSelects: make(chan SelectionContainer), selectCache: []SelectionContainer{} })
 	}
 
 	return OIR, nil
@@ -175,6 +176,23 @@ func (s* Server) OrderPay(ctx context.Context, in *OrderPayRequest) (*OrderPayRe
 
 
 // Selections
+
+func RemoveFromSelectCacheIfFalse(sc []SelectionContainer, c SelectionContainer) []SelectionContainer {
+	j := 0
+	var tmpSc []SelectionContainer
+	for _, n := range sc {
+		//@TODO: change to phonenumber
+		if n.Fname != c.Fname && n.Lname != c.Lname && n.ItemId != c.ItemId {
+			copied := n
+			sc[j] = n
+			tmpSc = append(tmpSc, copied)
+			j++;
+		}
+
+	}
+	return tmpSc
+}
+
 func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emptypb.Empty, error) {
 	//@TODO: DB selection
 	//err := DBSelectionClick(in);
@@ -186,13 +204,19 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 	if err != nil {
 		return &empty.Empty{}, err
 	}
-	cont := SelectionContainer{Fname: fname, Lname: lname, ItemId: in.Id}
-
+	cont := SelectionContainer{Fname: fname, Lname: lname, ItemId: in.Id, IsSplit: in.IsSplit, IsSelected: in.IsSelected}
+	cacheCont := cont
 
 	log.Print(cont)
-	for _, c := range s.selects {
-		if c.token_code == in.TokenCode {
-			c.token_selects<- cont
+	for i, c := range s.selects {
+		if c.tokenCode == in.TokenCode {
+
+			if cont.IsSelected {
+				s.selects[i].selectCache = append(s.selects[i].selectCache, cacheCont)
+			} else if !cont.IsSelected {
+				s.selects[i].selectCache = RemoveFromSelectCacheIfFalse(s.selects[i].selectCache, cacheCont)
+			}
+			c.tokenSelects <- cont
 			break
 		}
 	}
@@ -205,14 +229,24 @@ func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPU
 
 
 
+
 	for _, c := range s.selects {
-		if c.token_code == in.TokenCode {
+		if c.tokenCode == in.TokenCode {
+			//send cache of clicks
+			for _, cachedCont := range c.selectCache {
+				log.Print("Trying to send cache of selects")
+				if err := stream.Send(&cachedCont); err != nil {
+					log.Printf("Stream connection failed: %v", err)
+					return nil
+				}
+			}
+
 			for {
 				log.Print("Trying to sub")
-				cont := <-c.token_selects
+				cont := <-c.tokenSelects
 				log.Printf("Got this from chan: %v", cont)
 				if err := stream.Send(&cont); err != nil {
-					c.token_selects<- cont
+					c.tokenSelects <- cont
 					log.Printf("Stream connection failed: %v", err)
 					return nil
 				}

@@ -6,7 +6,8 @@ create table USERS (
                        auth_token_exp TIME,
                        primary_card TEXT,
                        current_order INT,
-                       current_sms_verification_token TEXT
+                       current_sms_verification_token TEXT,
+                       past_orders INT[] DEFAULT '{}'
 );
 
 /* @TODO: do more secure */
@@ -29,10 +30,11 @@ create table TOKENS (
 );
 
 create table ORDERS (
-    order_id INT
+    order_id INT,
+    rest_name TEXT
 );
 
-/* @TODO: paid_by should be an array or smth of that nature. obvs not array its a DB but yeah*/
+
 create table ORDERITEMS (
     order_id INT,
     item_name TEXT,
@@ -41,7 +43,7 @@ create table ORDERITEMS (
     item_id SERIAL,
     paid_for BOOL,
     total_splits INT,
-    paid_by TEXT,
-    selected_by TEXT[]
+    paid_by TEXT[] DEFAULT '{}',
+    selected_by TEXT[] DEFAULT '{}'
 )
 

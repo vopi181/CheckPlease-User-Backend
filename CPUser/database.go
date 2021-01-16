@@ -3,6 +3,9 @@ package CPUser
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
+	"strings"
+
 	//"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -173,12 +176,16 @@ func DBGetUserInfo(in *AuthTokenRequest) (*UserInfoResponse, error) {
 
 }
 
-func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, error) {
 
+func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, error) {
+	pn, err := DBAuthTokenToPhone(in.Token)
+	if err != nil {
+		return nil, err
+	}
 
 	orderitems := []*OrderItem{}
 
-	rows, err := db.Query("SELECT item_name, item_type, item_cost, item_id, paid_for, total_splits FROM orderitems where paid_by=$1", in.Token)
+	rows, err := db.Query("SELECT item_name, item_type, item_cost, item_id, paid_for, total_splits, paid_by, order_id FROM orderitems where $1 = ANY(paid_by)", pn)
 	if err != nil {
 		// handle this error better than this
 		return &GetUserOrderHistoryResponse{}, err
@@ -193,12 +200,14 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 		var item_id int64
 		var paid_for bool
 		var total_splits int64
-		err = rows.Scan(&item_name, &item_type, &item_cost, &item_id, &paid_for, &total_splits)
+		var paid_by string
+		var order_id int64
+		err = rows.Scan(&item_name, &item_type, &item_cost, &item_id, &paid_for, &total_splits, &paid_by, &order_id)
 		if err != nil {
 			return &GetUserOrderHistoryResponse{}, err
 		}
 
-		orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits})
+		orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits, PaidBy: DBPGStringArrayToStringSlice(paid_by), OrderId: order_id})
 
 	}
 	err = rows.Err()
@@ -297,6 +306,14 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 }
 //@TODO: HANDLE PAYMENTS!!!!!!!!!!!!!!
 func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
+
+	//get phone number for order history
+	pn, err := DBAuthTokenToPhone(in.AuthRequest.Token)
+	if err != nil {
+		// handle this error better than this
+		return &OrderPayResponse{}, err
+	}
+
 	//handle payment
 
 
@@ -306,8 +323,9 @@ func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
 
 	var total_splits int64
 	var current_cost float64
-	err := db.QueryRow(`SELECT total_splits, item_cost FROM orderitems WHERE item_id=$1`,
-		in.ItemPay.Id).Scan(&total_splits, &current_cost)
+	var order_id int64
+	err = db.QueryRow(`SELECT total_splits, item_cost, order_id FROM orderitems WHERE item_id=$1`,
+		in.ItemPay.Id).Scan(&total_splits, &current_cost, &order_id)
 	if err != nil {
 		// handle this error better than this
 		return &OrderPayResponse{}, err
@@ -322,12 +340,22 @@ func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
 	}
 
 
-	stmt, err := db.Prepare(`UPDATE orderitems SET paid_for=$1, total_splits=$2, paid_by=$3 WHERE item_id=$4`)
+	stmt, err := db.Prepare(`UPDATE orderitems SET paid_for=$1, total_splits=$2, paid_by= array_append(paid_by,$3) WHERE item_id=$4`)
 	if err != nil {
 		return &OrderPayResponse{}, err
 	}
 
-	_, err = stmt.Exec(pf, total_splits, in.AuthRequest.Token, in.ItemPay.Id)
+	_, err = stmt.Exec(pf, total_splits, pn, in.ItemPay.Id)
+	if err != nil {
+		return &OrderPayResponse{}, err
+	}
+
+	stmt, err = db.Prepare(`UPDATE users SET past_orders = array_append(past_orders,$1) WHERE phone=$2`)
+	if err != nil {
+		return &OrderPayResponse{}, err
+	}
+
+	_, err = stmt.Exec(strconv.FormatInt(order_id, 10), pn)
 	if err != nil {
 		return &OrderPayResponse{}, err
 	}
@@ -339,7 +367,10 @@ func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
 
 
 // ##### SELECTION #####
-
+//@TODO: Move to DB at some point
+//func DBUpdateOrderItemSelectedBy(tok string, item_id int) error {
+//
+//}
 
 
 // ###### HELPERS ######
@@ -379,4 +410,14 @@ func DBPing() error {
 		return err
 	}
 	return nil
+}
+
+
+// HELPERS
+
+func DBPGStringArrayToStringSlice(str string) []string {
+	ret := strings.Split(str, ",")
+	ret[0] = string(([]rune(ret[0]))[1:len(ret[0])])
+	ret[len(ret)-1] = string(([]rune(ret[len(ret)-1]))[0:len(ret[len(ret)-1])-1])
+	return ret;
 }
