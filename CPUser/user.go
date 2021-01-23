@@ -19,8 +19,14 @@ type SelectionNotificationChan struct {
 	selectCache []SelectionContainer;
 }
 
+type ItemPayNotificationChan struct {
+	tokenCode string
+	tokenPays chan ItemPayNotification
+}
+
 type Server struct {
 	selects []SelectionNotificationChan;
+	pays []ItemPayNotificationChan;
 }
 
 const DELAY_CUZ_ALEX_CHOSE_A_BAD_UI_FRAMEWORK = 100
@@ -162,6 +168,18 @@ func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) 
 		s.selects = append(s.selects, SelectionNotificationChan{tokenCode: in.TableToken, tokenSelects: make(chan SelectionContainer), selectCache: []SelectionContainer{} })
 	}
 
+	is_pay_chan := false;
+	for _, chans := range s.pays {
+		if chans.tokenCode == in.TableToken {
+			is_pay_chan = true
+			break
+		}
+	}
+	if !is_pay_chan {
+		s.pays = append(s.pays, ItemPayNotificationChan{tokenCode: in.TableToken, tokenPays: make(chan ItemPayNotification)})
+	}
+
+
 	return OIR, nil
 }
 
@@ -170,9 +188,53 @@ func (s* Server) OrderPay(ctx context.Context, in *OrderPayRequest) (*OrderPayRe
 	if err != nil {
 		return nil, err
 	}
+
+	fname, lname, err := DBAuthTokenToFirstLastName(in.AuthRequest.Token);
+	if err != nil {
+		return nil, err
+	}
+	cont := ItemPayNotification{Id: in.ItemPay.Id, Split: in.ItemPay.Split, PaidByFname: fname, PaidByLname: lname}
+	for _, c := range s.pays {
+		if c.tokenCode == in.ItemPay.TokenCode {
+			c.tokenPays <- cont
+		}
+
+	}
+
+
 	return OPR, nil
 }
+func (s *Server) ItemPaySubscribe(in *ItemPaySubscribeRequest, stream CPUser_ItemPaySubscribeServer) error {
 
+	for _, c := range s.pays {
+		if c.tokenCode == in.TokenCode {
+			////send cache of clicks
+			//for _, cachedCont := range c.selectCache {
+			//	log.Print("Trying to send cache of selects")
+			//	if err := stream.Send(&cachedCont); err != nil {
+			//		log.Printf("Stream connection failed: %v", err)
+			//		return nil
+			//	}
+			//}
+
+			for {
+				log.Print("Trying to sub")
+				cont := <-c.tokenPays
+				log.Printf("Got this from chan: %v", cont)
+
+				//@HACK: dont spam client cuz client isnt buffered :(
+
+				if err := stream.Send(&cont); err != nil {
+					c.tokenPays <- cont
+					log.Printf("Stream connection failed: %v", err)
+					return nil
+				}
+			}
+
+		}
+	}
+	return nil
+}
 
 
 
@@ -238,6 +300,7 @@ func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsers
 	}
 	return &SelContArray{}, status.Errorf(codes.NotFound, "Could not find token code");
 }
+
 
 
 func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPUser_SelectionSubscribeServer) error {

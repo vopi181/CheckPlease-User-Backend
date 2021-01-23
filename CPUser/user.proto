@@ -27,6 +27,7 @@ service CPUser {
   // Order Info
   rpc OrderInitiation (OrderInitiateRequest) returns (OrderInitiateResponse) {}
   rpc OrderPay (OrderPayRequest) returns (OrderPayResponse) {}
+  rpc ItemPaySubscribe (ItemPaySubscribeRequest) returns (stream ItemPayNotification) {}
 
   // Selections
   rpc SelectionClick (SelectionRequest) returns (google.protobuf.Empty) {}
@@ -153,8 +154,21 @@ message ItemPay {
   int64 id = 1;
   PaymentCard pc = 2;
   bool split = 3;
+  string token_code = 4;
 }
 
+message ItemPayNotification {
+  int64 id = 1;
+  bool split = 2;
+  string paid_by_fname= 3;
+  string paid_by_lname = 4;
+}
+
+message ItemPaySubscribeRequest {
+  AuthTokenRequest auth_request = 1;
+  //table token
+  string token_code = 2;
+}
 
 message OrderItem  {
   string name = 1;
