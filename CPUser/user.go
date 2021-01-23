@@ -263,11 +263,17 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 	//	return err
 	//}
 
+	// make uuid so we can have some error checking stuff kinda to resend
+	uuid, err := random(12)
+	if err != nil {
+		return &empty.Empty{}, status.Errorf(codes.Internal, "UUID Creation Error: %v")
+	}
+
 	fname, lname, err := DBAuthTokenToFirstLastName(in.AuthRequest.Token);
 	if err != nil {
 		return &empty.Empty{}, err
 	}
-	cont := SelectionContainer{Fname: fname, Lname: lname, ItemId: in.Id, IsSplit: in.IsSplit, IsSelected: in.IsSelected}
+	cont := SelectionContainer{Fname: fname, Lname: lname, ItemId: in.Id, IsSplit: in.IsSplit, IsSelected: in.IsSelected, Uuid: uuid}
 	cacheCont := cont
 
 	log.Print(cont)
@@ -303,8 +309,17 @@ func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsers
 
 
 
-func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPUser_SelectionSubscribeServer) error {
+func (s *Server) SelectionSubscribe(stream CPUser_SelectionSubscribeServer) error {
 	log.Print("Trying to sub")
+	//@TODO: srv context to stop listening
+
+	// listen for first request
+	in, err := stream.Recv()
+	if err != nil || in.LastUuid != "first" {
+		return status.Errorf( codes.FailedPrecondition,"Error receiving first request: %v")
+	}
+
+
 
 
 	for _, c := range s.selects {
@@ -317,7 +332,7 @@ func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPU
 			//		return nil
 			//	}
 			//}
-			
+
 			for {
 				cont := <-c.tokenSelects
 				log.Printf("Got this from chan: %v", cont)
@@ -327,8 +342,24 @@ func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPU
 
 				if err := stream.Send(&cont); err != nil {
 					c.tokenSelects <- cont
+
 					log.Printf("Stream connection failed: %v", err)
 					return nil
+				}
+				for {
+					req, err := stream.Recv()
+					if err != nil {
+						return status.Errorf( codes.DataLoss,"Error receiving bounceback request: %v")
+					}
+					if req.LastUuid != cont.Uuid {
+						if err := stream.Send(&cont); err != nil {
+							c.tokenSelects <- cont
+
+							log.Printf("Stream connection failed: %v", err)
+							return nil
+						}
+					}
+
 				}
 			}
 

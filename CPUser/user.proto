@@ -31,7 +31,7 @@ service CPUser {
 
   // Selections
   rpc SelectionClick (SelectionRequest) returns (google.protobuf.Empty) {}
-  rpc SelectionSubscribe (SelectionCurrentUsersRequest) returns (stream SelectionContainer) {}
+  rpc SelectionSubscribe (stream SelectionCurrentUsersRequest) returns (stream SelectionContainer) {}
   rpc SelectionInitial (SelectionCurrentUsersRequest) returns (SelContArray) {}
 
   //misc
@@ -98,8 +98,10 @@ message SelectionRequest {
 
 message SelectionCurrentUsersRequest {
   AuthTokenRequest auth_request = 1;
-  //table token
+  // table token
   string token_code = 2;
+  // last uuid of the sel cont
+  string last_uuid = 3;
 }
 
 message SelContArray {
@@ -114,6 +116,7 @@ message SelectionContainer {
   //is split?
   bool is_split = 4;
   bool is_selected = 5;
+  string uuid = 6;
 
 }
 
