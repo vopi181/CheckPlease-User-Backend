@@ -31,6 +31,7 @@ service CPUser {
   // Selections
   rpc SelectionClick (SelectionRequest) returns (google.protobuf.Empty) {}
   rpc SelectionSubscribe (SelectionCurrentUsersRequest) returns (stream SelectionContainer) {}
+  rpc SelectionInitial (SelectionCurrentUsersRequest) returns (SelContArray) {}
 
   //misc
   rpc Ping (google.protobuf.Empty) returns (PongResponse) {}
@@ -98,6 +99,10 @@ message SelectionCurrentUsersRequest {
   AuthTokenRequest auth_request = 1;
   //table token
   string token_code = 2;
+}
+
+message SelContArray {
+  repeated SelectionContainer cont = 1;
 }
 
 message SelectionContainer {

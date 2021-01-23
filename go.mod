@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/golang/protobuf v1.4.3
 	github.com/inconshreveable/log15 v0.0.0-20201112154412-8562bdadbbac // indirect
+	github.com/jackc/pgtype v1.6.2
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/kevinburke/go-types v0.0.0-20201208005256-aee49f568a20 // indirect
 	github.com/kevinburke/go.uuid v1.2.0 // indirect

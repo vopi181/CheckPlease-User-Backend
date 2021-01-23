@@ -23,6 +23,7 @@ type Server struct {
 	selects []SelectionNotificationChan;
 }
 
+const DELAY_CUZ_ALEX_CHOSE_A_BAD_UI_FRAMEWORK = 100
 
 
 // Proto Verify
@@ -225,26 +226,43 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 
 }
 
-func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPUser_SelectionSubscribeServer) error {
+func (s *Server) SelectionInitial(in *SelectionCurrentUsersRequest) (SelContArray, error) {
+	for _, c := range s.selects {
+		if c.tokenCode == in.TokenCode {
+			contSlice := make([]*SelectionContainer, len(c.selectCache))
+			for i := range contSlice {
+				contSlice[i] = &c.selectCache[i]
+			}
+			return SelContArray{Cont: contSlice}, nil
+		}
+	}
+	return SelContArray{}, status.Errorf(codes.NotFound, "Could not find token code");
+}
 
+
+func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPUser_SelectionSubscribeServer) error {
 
 
 
 	for _, c := range s.selects {
 		if c.tokenCode == in.TokenCode {
-			//send cache of clicks
-			for _, cachedCont := range c.selectCache {
-				log.Print("Trying to send cache of selects")
-				if err := stream.Send(&cachedCont); err != nil {
-					log.Printf("Stream connection failed: %v", err)
-					return nil
-				}
-			}
+			////send cache of clicks
+			//for _, cachedCont := range c.selectCache {
+			//	log.Print("Trying to send cache of selects")
+			//	if err := stream.Send(&cachedCont); err != nil {
+			//		log.Printf("Stream connection failed: %v", err)
+			//		return nil
+			//	}
+			//}
 
 			for {
 				log.Print("Trying to sub")
 				cont := <-c.tokenSelects
 				log.Printf("Got this from chan: %v", cont)
+
+				//@HACK: dont spam client cuz client isnt buffered :(
+
+
 				if err := stream.Send(&cont); err != nil {
 					c.tokenSelects <- cont
 					log.Printf("Stream connection failed: %v", err)
