@@ -226,7 +226,7 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 
 }
 
-func (s *Server) SelectionInitial(in *SelectionCurrentUsersRequest) (SelContArray, error) {
+func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsersRequest) (SelContArray, error) {
 	for _, c := range s.selects {
 		if c.tokenCode == in.TokenCode {
 			contSlice := make([]*SelectionContainer, len(c.selectCache))
