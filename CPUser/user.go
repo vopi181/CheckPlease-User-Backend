@@ -226,7 +226,7 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 
 }
 
-func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsersRequest) (SelContArray, error) {
+func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsersRequest) (*SelContArray, error) {
 	for _, c := range s.selects {
 		if c.tokenCode == in.TokenCode {
 			contSlice := make([]*SelectionContainer, len(c.selectCache))
@@ -236,7 +236,7 @@ func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsers
 			return SelContArray{Cont: contSlice}, nil
 		}
 	}
-	return SelContArray{}, status.Errorf(codes.NotFound, "Could not find token code");
+	return &SelContArray{}, status.Errorf(codes.NotFound, "Could not find token code");
 }
 
 
