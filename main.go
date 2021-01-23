@@ -12,7 +12,7 @@ import (
 
 
 func main() {
-	fmt.Println("CheckPlease User Backend Launching at localhost:9000");
+	log.Println("CheckPlease User Backend Launching at localhost:9000");
 	lis, err := net.Listen("tcp", ":9000")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -26,7 +26,7 @@ func main() {
 
 	reflection.Register(grpcServer);
 
-	fmt.Println("Connecting to DB");
+	log.Println("Connecting to DB");
 	err = CPUser.DBCreateDBConn()
 	if err != nil {
 		fmt.Errorf("%v", err.Error())
@@ -35,11 +35,11 @@ func main() {
 
 	err = CPUser.DBPing()
 	if err != nil {
-		fmt.Println("Couldnt connect to DB. Make sure a DB is running and creds are correct")
+		log.Println("Couldnt connect to DB. Make sure a DB is running and creds are correct")
 		fmt.Errorf("%v", err.Error())
 		os.Exit(0);
 	}
-	fmt.Println("Connected to DB")
+	log.Println("Connected to DB")
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %s", err)
