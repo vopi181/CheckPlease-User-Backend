@@ -346,6 +346,7 @@ func (s *Server) SelectionSubscribe(stream CPUser_SelectionSubscribeServer) erro
 					log.Printf("Stream connection failed: %v", err)
 					return nil
 				}
+				// listen for bounceback
 				for {
 					req, err := stream.Recv()
 					if err != nil {
@@ -359,6 +360,7 @@ func (s *Server) SelectionSubscribe(stream CPUser_SelectionSubscribeServer) erro
 							return nil
 						}
 					}
+					break
 
 				}
 			}
