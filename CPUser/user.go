@@ -276,7 +276,7 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 	cont := SelectionContainer{Fname: fname, Lname: lname, ItemId: in.Id, IsSplit: in.IsSplit, IsSelected: in.IsSelected, Uuid: uuid}
 	cacheCont := cont
 
-	log.Print(cont)
+	log.Printf("Got from client: %v", cont)
 	for i, c := range s.selects {
 		if c.tokenCode == in.TokenCode {
 
