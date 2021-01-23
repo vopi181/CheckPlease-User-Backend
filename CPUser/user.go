@@ -233,7 +233,7 @@ func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsers
 			for i := range contSlice {
 				contSlice[i] = &c.selectCache[i]
 			}
-			return SelContArray{Cont: contSlice}, nil
+			return &SelContArray{Cont: contSlice}, nil
 		}
 	}
 	return &SelContArray{}, status.Errorf(codes.NotFound, "Could not find token code");
