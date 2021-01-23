@@ -304,7 +304,7 @@ func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsers
 
 
 func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPUser_SelectionSubscribeServer) error {
-
+	log.Print("Trying to sub")
 
 
 	for _, c := range s.selects {
@@ -317,9 +317,8 @@ func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPU
 			//		return nil
 			//	}
 			//}
-
+			
 			for {
-				log.Print("Trying to sub")
 				cont := <-c.tokenSelects
 				log.Printf("Got this from chan: %v", cont)
 
