@@ -162,8 +162,9 @@ message ItemPay {
 message ItemPayNotification {
   int64 id = 1;
   bool split = 2;
-  string paid_by_fname= 3;
-  string paid_by_lname = 4;
+  string fname= 3;
+  string lname = 4;
+  string phone = 5;
 }
 
 message ItemPaySubscribeRequest {

@@ -21,7 +21,7 @@ type SelectionNotificationChan struct {
 
 type ItemPayNotificationChan struct {
 	tokenCode string
-	tokenPays chan ItemPayNotification
+	chanMap map[string](chan ItemPayNotification)
 }
 
 type Server struct {
@@ -154,7 +154,6 @@ func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) 
 	}
 
 	is_chan := false;
-
 	for _, chans := range s.selects {
 		if chans.tokenCode == in.TableToken {
 			is_chan = true
@@ -181,9 +180,13 @@ func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) 
 		}
 	}
 	if !is_pay_chan {
-		s.pays = append(s.pays, ItemPayNotificationChan{tokenCode: in.TableToken, tokenPays: make(chan ItemPayNotification)})
+		s.pays = append(s.pays, ItemPayNotificationChan{tokenCode: in.TableToken, chanMap: make(map[string](chan ItemPayNotification))})
 	}
-
+	for i, c := range s.pays {
+		if c.tokenCode == in.TableToken {
+			s.pays[i].chanMap[in.AuthRequest.Token] = make(chan ItemPayNotification)
+		}
+	}
 
 	return OIR, nil
 }
@@ -198,10 +201,17 @@ func (s* Server) OrderPay(ctx context.Context, in *OrderPayRequest) (*OrderPayRe
 	if err != nil {
 		return nil, err
 	}
-	cont := ItemPayNotification{Id: in.ItemPay.Id, Split: in.ItemPay.Split, PaidByFname: fname, PaidByLname: lname}
+
+	phone, err := DBAuthTokenToPhone(in.AuthRequest.Token)
+	if err != nil {
+		return nil, err
+	}
+	cont := ItemPayNotification{Id: in.ItemPay.Id, Split: in.ItemPay.Split, Fname: fname, Lname: lname, Phone: phone}
 	for _, c := range s.pays {
 		if c.tokenCode == in.ItemPay.TokenCode {
-			c.tokenPays <- cont
+			for _, element := range c.chanMap {
+				element <- cont
+			}
 		}
 
 	}
@@ -211,7 +221,7 @@ func (s* Server) OrderPay(ctx context.Context, in *OrderPayRequest) (*OrderPayRe
 func (s *Server) ItemPaySubscribe(in *ItemPaySubscribeRequest, stream CPUser_ItemPaySubscribeServer) error {
 
 
-	for _, c := range s.pays {
+	for i, c := range s.pays {
 		if c.tokenCode == in.TokenCode {
 			////send cache of clicks
 			//for _, cachedCont := range c.selectCache {
@@ -225,13 +235,13 @@ func (s *Server) ItemPaySubscribe(in *ItemPaySubscribeRequest, stream CPUser_Ite
 
 			for {
 				log.Print("Trying to sub")
-				cont := <-c.tokenPays
+				cont := <-s.pays[i].chanMap[in.AuthRequest.Token]
 				log.Printf("Got this from chan: %v", cont)
 
 				//@HACK: dont spam client cuz client isnt buffered :(
 
 				if err := stream.Send(&cont); err != nil {
-					c.tokenPays <- cont
+					s.pays[i].chanMap[in.AuthRequest.Token] <- cont
 					log.Printf("Stream connection failed: %v", err)
 					return nil
 				}
