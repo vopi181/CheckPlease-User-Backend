@@ -269,7 +269,7 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 	//	return err
 	//}
 
-	
+
 
 	fname, lname, err := DBAuthTokenToFirstLastName(in.AuthRequest.Token);
 	if err != nil {
