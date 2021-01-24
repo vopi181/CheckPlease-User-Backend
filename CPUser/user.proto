@@ -32,7 +32,7 @@ service CPUser {
   // Selections
   rpc SelectionClick (SelectionRequest) returns (google.protobuf.Empty) {}
   // FIRST ONE YOU SEND HAS TO HAVE lastuuid = "first"
-  rpc SelectionSubscribe (stream SelectionCurrentUsersRequest) returns (stream SelectionContainer) {}
+  rpc SelectionSubscribe (SelectionCurrentUsersRequest) returns (stream SelectionContainer) {}
   rpc SelectionInitial (SelectionCurrentUsersRequest) returns (SelContArray) {}
 
   //misc
