@@ -14,7 +14,6 @@ import (
 
 type SelectionNotificationChan struct {
 	tokenCode    string;
-	tokenSelects chan SelectionContainer;
 	//@TODO: Cache selects for late scanning user. Should move to DB.
 	selectCache []SelectionContainer;
 	chanMap map[string](chan SelectionContainer)
@@ -166,7 +165,7 @@ func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) 
 	}
 
 	if !is_chan {
-		s.selects = append(s.selects, SelectionNotificationChan{tokenCode: in.TableToken, tokenSelects: make(chan SelectionContainer), selectCache: []SelectionContainer{}, chanMap: make(map[string](chan SelectionContainer))})
+		s.selects = append(s.selects, SelectionNotificationChan{tokenCode: in.TableToken,  selectCache: []SelectionContainer{}, chanMap: make(map[string](chan SelectionContainer))})
 	}
 
 
