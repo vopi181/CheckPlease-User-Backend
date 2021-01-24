@@ -29,8 +29,6 @@ type Server struct {
 	pays []ItemPayNotificationChan;
 }
 
-const DELAY_CUZ_ALEX_CHOSE_A_BAD_UI_FRAMEWORK = 100
-
 
 // Proto Verify
 func VerifyCreateUserRequest(in *CreateUserRequest) error {
@@ -322,14 +320,6 @@ func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsers
 func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPUser_SelectionSubscribeServer) error {
 	log.Print("Trying to sub")
 	//@TODO: srv context to stop listening
-
-	// listen for first request
-	//in, err := stream.Recv()
-	//if err != nil || in.LastUuid != "first" {
-	//	return status.Errorf( codes.FailedPrecondition,"Error receiving first request: %v")
-	//}
-
-
 
 
 	for i, c := range s.selects {
