@@ -17,6 +17,7 @@ type SelectionNotificationChan struct {
 	tokenSelects chan SelectionContainer;
 	//@TODO: Cache selects for late scanning user. Should move to DB.
 	selectCache []SelectionContainer;
+	chanMap map[string](chan SelectionContainer)
 }
 
 type ItemPayNotificationChan struct {
@@ -165,7 +166,14 @@ func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) 
 	}
 
 	if !is_chan {
-		s.selects = append(s.selects, SelectionNotificationChan{tokenCode: in.TableToken, tokenSelects: make(chan SelectionContainer), selectCache: []SelectionContainer{} })
+		s.selects = append(s.selects, SelectionNotificationChan{tokenCode: in.TableToken, tokenSelects: make(chan SelectionContainer), selectCache: []SelectionContainer{}, chanMap: make(map[string](chan SelectionContainer))})
+	}
+
+
+	for _, c := range s.selects {
+		if c.tokenCode == in.TableToken {
+			c.chanMap[in.AuthRequest.Token] = make(chan SelectionContainer)
+		}
 	}
 
 	is_pay_chan := false;
@@ -201,10 +209,10 @@ func (s* Server) OrderPay(ctx context.Context, in *OrderPayRequest) (*OrderPayRe
 
 	}
 
-
 	return OPR, nil
 }
 func (s *Server) ItemPaySubscribe(in *ItemPaySubscribeRequest, stream CPUser_ItemPaySubscribeServer) error {
+
 
 	for _, c := range s.pays {
 		if c.tokenCode == in.TokenCode {
@@ -216,6 +224,7 @@ func (s *Server) ItemPaySubscribe(in *ItemPaySubscribeRequest, stream CPUser_Ite
 			//		return nil
 			//	}
 			//}
+
 
 			for {
 				log.Print("Trying to sub")
@@ -276,7 +285,7 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 	cont := SelectionContainer{Fname: fname, Lname: lname, ItemId: in.Id, IsSplit: in.IsSplit, IsSelected: in.IsSelected, Uuid: uuid}
 	cacheCont := cont
 
-	log.Printf("Got from client: %v", cont)
+	log.Printf("Got from client: %v\n", cont)
 	for i, c := range s.selects {
 		if c.tokenCode == in.TokenCode {
 
@@ -285,7 +294,9 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 			} else if !cont.IsSelected {
 				s.selects[i].selectCache = RemoveFromSelectCacheIfFalse(s.selects[i].selectCache, cacheCont)
 			}
-			c.tokenSelects <- cont
+			for _, element := range c.chanMap {
+				element <- cont
+			}
 			break
 		}
 	}
@@ -309,20 +320,20 @@ func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsers
 
 
 
-func (s *Server) SelectionSubscribe(stream CPUser_SelectionSubscribeServer) error {
+func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPUser_SelectionSubscribeServer) error {
 	log.Print("Trying to sub")
 	//@TODO: srv context to stop listening
 
 	// listen for first request
-	in, err := stream.Recv()
-	if err != nil || in.LastUuid != "first" {
-		return status.Errorf( codes.FailedPrecondition,"Error receiving first request: %v")
-	}
+	//in, err := stream.Recv()
+	//if err != nil || in.LastUuid != "first" {
+	//	return status.Errorf( codes.FailedPrecondition,"Error receiving first request: %v")
+	//}
 
 
 
 
-	for _, c := range s.selects {
+	for i, c := range s.selects {
 		if c.tokenCode == in.TokenCode {
 			////send cache of clicks
 			//for _, cachedCont := range c.selectCache {
@@ -334,35 +345,37 @@ func (s *Server) SelectionSubscribe(stream CPUser_SelectionSubscribeServer) erro
 			//}
 
 			for {
-				cont := <-c.tokenSelects
-				log.Printf("Got this from chan: %v", cont)
+				//log.Printf("notifchan: %\n", s.selects[i])
+				cont := <-s.selects[i].chanMap[in.AuthRequest.Token]
+				log.Printf("Got this from chan: %v\n", cont)
 
 				//@HACK: dont spam client cuz client isnt buffered :(
 
 
 				if err := stream.Send(&cont); err != nil {
-					c.tokenSelects <- cont
+					s.selects[i].chanMap[in.AuthRequest.Token] <- cont
 
 					log.Printf("Stream connection failed: %v", err)
 					return nil
 				}
-				// listen for bounceback
-				for {
-					req, err := stream.Recv()
-					if err != nil {
-						return status.Errorf( codes.DataLoss,"Error receiving bounceback request: %v")
-					}
-					if req.LastUuid != cont.Uuid {
-						if err := stream.Send(&cont); err != nil {
-							c.tokenSelects <- cont
-
-							log.Printf("Stream connection failed: %v", err)
-							return nil
-						}
-					}
-					break
-
-				}
+				//// listen for bounceback
+				//for {
+				//	req, err := stream.Recv()
+				//	if err != nil {
+				//		log.Println(err)
+				//		return status.Errorf( codes.DataLoss,"Error receiving bounceback request: %v", err)
+				//	}
+				//	if req.LastUuid != cont.Uuid {
+				//		if err := stream.Send(&cont); err != nil {
+				//			c.tokenSelects <- cont
+				//
+				//			log.Printf("Stream connection failed: %v", err)
+				//			return nil
+				//		}
+				//	}
+				//	break
+				//
+				//}
 			}
 
 		}
