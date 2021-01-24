@@ -279,7 +279,12 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 	if err != nil {
 		return &empty.Empty{}, err
 	}
-	cont := SelectionContainer{Fname: fname, Lname: lname, ItemId: in.Id, IsSplit: in.IsSplit, IsSelected: in.IsSelected, Uuid: uuid}
+	phone, err := DBAuthTokenToPhone(in.AuthRequest.Token)
+	if err != nil {
+		return &empty.Empty{}, err
+	}
+
+	cont := SelectionContainer{Fname: fname, Lname: lname, ItemId: in.Id, IsSplit: in.IsSplit, IsSelected: in.IsSelected, Phone: phone}
 	cacheCont := cont
 
 	log.Printf("Got from client: %v\n", cont)
