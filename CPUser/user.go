@@ -269,11 +269,7 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 	//	return err
 	//}
 
-	// make uuid so we can have some error checking stuff kinda to resend
-	uuid, err := random(12)
-	if err != nil {
-		return &empty.Empty{}, status.Errorf(codes.Internal, "UUID Creation Error: %v")
-	}
+	
 
 	fname, lname, err := DBAuthTokenToFirstLastName(in.AuthRequest.Token);
 	if err != nil {
