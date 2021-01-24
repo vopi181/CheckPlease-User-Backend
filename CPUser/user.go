@@ -167,9 +167,9 @@ func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) 
 	}
 
 
-	for _, c := range s.selects {
+	for i, c := range s.selects {
 		if c.tokenCode == in.TableToken {
-			c.chanMap[in.AuthRequest.Token] = make(chan SelectionContainer)
+			s.selects[i].chanMap[in.AuthRequest.Token] = make(chan SelectionContainer)
 		}
 	}
 
