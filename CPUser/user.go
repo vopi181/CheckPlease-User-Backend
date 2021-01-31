@@ -207,9 +207,13 @@ func (s* Server) OrderPay(ctx context.Context, in *OrderPayRequest) (*OrderPayRe
 		return nil, err
 	}
 	cont := ItemPayNotification{Id: in.ItemPay.Id, Split: in.ItemPay.Split, Fname: fname, Lname: lname, Phone: phone}
+
+
 	for _, c := range s.pays {
 		if c.tokenCode == in.ItemPay.TokenCode {
-			for _, element := range c.chanMap {
+			log.Printf("C: %v\n", c)
+			for tok, element := range c.chanMap {
+				log.Printf("[ORDER] Adding cont to ItemPay chan for %v\n", tok)
 				element <- cont
 			}
 		}
@@ -220,7 +224,7 @@ func (s* Server) OrderPay(ctx context.Context, in *OrderPayRequest) (*OrderPayRe
 }
 func (s *Server) ItemPaySubscribe(in *ItemPaySubscribeRequest, stream CPUser_ItemPaySubscribeServer) error {
 
-
+	log.Printf("subbing %v", in.AuthRequest.Token)
 	for i, c := range s.pays {
 		if c.tokenCode == in.TokenCode {
 			////send cache of clicks
@@ -234,9 +238,9 @@ func (s *Server) ItemPaySubscribe(in *ItemPaySubscribeRequest, stream CPUser_Ite
 
 
 			for {
-				log.Print("Trying to sub")
 				cont := <-s.pays[i].chanMap[in.AuthRequest.Token]
 				log.Printf("Got this from chan: %v", cont)
+
 
 				//@HACK: dont spam client cuz client isnt buffered :(
 
@@ -302,7 +306,9 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 			} else if !cont.IsSelected {
 				s.selects[i].selectCache = RemoveFromSelectCacheIfFalse(s.selects[i].selectCache, cacheCont)
 			}
-			for _, element := range c.chanMap {
+			for tok, element := range c.chanMap {
+				log.Printf("Iterating to send to chan for %v\n", tok)
+				log.Printf("chans: %v", c.chanMap)
 				element <- cont
 			}
 			break
@@ -316,6 +322,7 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsersRequest) (*SelContArray, error) {
 	for _, c := range s.selects {
 		if c.tokenCode == in.TokenCode {
+			log.Println(c.selectCache)
 			contSlice := make([]*SelectionContainer, len(c.selectCache))
 			for i := range contSlice {
 				contSlice[i] = &c.selectCache[i]
@@ -331,7 +338,10 @@ func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsers
 func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPUser_SelectionSubscribeServer) error {
 	log.Print("Trying to sub")
 	//@TODO: srv context to stop listening
-
+	fname, lname, err := DBAuthTokenToFirstLastName(in.AuthRequest.Token)
+	if err != nil {
+		return err;
+	}
 
 	for i, c := range s.selects {
 		if c.tokenCode == in.TokenCode {
@@ -347,7 +357,7 @@ func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPU
 			for {
 				//log.Printf("notifchan: %\n", s.selects[i])
 				cont := <-s.selects[i].chanMap[in.AuthRequest.Token]
-				log.Printf("Got this from chan: %v\n", cont)
+				log.Printf("Got this from chan for %v %v: %v\n", fname, lname, cont)
 
 				//@HACK: dont spam client cuz client isnt buffered :(
 
