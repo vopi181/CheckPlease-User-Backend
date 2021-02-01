@@ -421,3 +421,62 @@ func DBPGStringArrayToStringSlice(str string) []string {
 	ret[len(ret)-1] = string(([]rune(ret[len(ret)-1]))[0:len(ret[len(ret)-1])-1])
 	return ret;
 }
+
+func DBSelectionClick(in *SelectionRequest) error {
+	phone, err := DBAuthTokenToPhone(in.AuthRequest.Token)
+	if err != nil {
+		return err
+	}
+
+	// handle splits differently
+	// @TODO: Handle splits differently
+	if !in.IsSplit {
+		// is selected
+		if in.IsSelected {
+			// Check if already selected_by
+			var selected_by string
+			err := db.QueryRow(`SELECT selected_by FROM orderitems WHERE item_id=$1`, in.Id).Scan(&selected_by)
+			if err != nil {
+				return err
+			}
+
+			if selected_by != "" {
+				return status.Errorf(codes.AlreadyExists, fmt.Sprintf("Already Selected %v", in.Id))
+			}
+
+			stmt, err := db.Prepare(`UPDATE orderitems SET selected_by = $1 WHERE item_id=$2`)
+			if err != nil {
+				return err
+			}
+
+			_, err = stmt.Exec(phone, in.Id)
+			if err != nil {
+				return err
+			}
+
+		} else {
+			//is unselected
+			stmt, err := db.Prepare(`UPDATE orderitems SET selected_by = $1 WHERE item_id=$2`)
+			if err != nil {
+				return err
+			}
+
+			_, err = stmt.Exec("", in.Id)
+			if err != nil {
+				return err
+			}
+
+		}
+	}
+
+	return nil
+}
+
+func DBGetSelects(in *SelectionCurrentUsersRequest) (*SelContArray, error) {
+	ret := SelContArray{}
+
+
+
+	return &ret, nil
+	return &SelContArray{}, nil
+}

@@ -111,7 +111,7 @@ func (s *Server) ReAuthUser(ctx context.Context, in *ReAuthUserRequest) (*AuthTo
 
 	err = DBUpdateTextVerificationToken(in.Phone, SMSVerificationCode)
 	if(err != nil) {
-		return nil, err;
+		return nil, status.Errorf(codes.NotFound, fmt.Sprintf("We don't appear to see the phone number"));
 	}
 
 	return &AuthTokenResponse{AuthToken: ""}, nil
@@ -161,6 +161,9 @@ func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) 
 		}
 	}
 
+	//@TODO: make channals buffered so not to block and therefore garbage the go func when sending to channel
+	//https://stackoverflow.com/questions/37439776/why-is-my-golang-channel-write-blocking-forever
+	// May backfire  if it  waits for chan to fill up
 	if !is_chan {
 		s.selects = append(s.selects, SelectionNotificationChan{tokenCode: in.TableToken,  selectCache: []SelectionContainer{}, chanMap: make(map[string](chan SelectionContainer))})
 	}
@@ -261,27 +264,33 @@ func (s *Server) ItemPaySubscribe(in *ItemPaySubscribeRequest, stream CPUser_Ite
 // Selections
 
 func RemoveFromSelectCacheIfFalse(sc []SelectionContainer, c SelectionContainer) []SelectionContainer {
-	j := 0
+	log.Printf("[SELECT] Starting sc: %v", sc)
 	var tmpSc []SelectionContainer
-	for _, n := range sc {
+	for i, n := range sc {
 		//@TODO: change to phonenumber
-		if n.Fname != c.Fname && n.Lname != c.Lname && n.ItemId != c.ItemId {
-			copied := n
-			sc[j] = n
-			tmpSc = append(tmpSc, copied)
-			j++;
+		log.Printf("[SELECT] Trying to anaylze: %v", sc[i])
+		if  n.ItemId != c.ItemId {
+			log.Printf("SELECT] Is not same item id")
+
+			log.Printf("[SELECT] Founding matching in SC: %v", n)
+			tmpSc = append(tmpSc, sc[i])
+
+		} else if n.Phone != c.Phone {
+			log.Printf("[SELECT] Is not same phone")
+			tmpSc = append(tmpSc, sc[i])
+
 		}
 
 	}
+	log.Printf("[SELECT] RemoveFromCache tmp: %v", tmpSc)
 	return tmpSc
 }
 
 func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emptypb.Empty, error) {
-	//@TODO: DB selection
-	//err := DBSelectionClick(in);
-	//if err != nil {
-	//	return err
-	//}
+	err := DBSelectionClick(in);
+	if err != nil {
+		return &empty.Empty{}, err
+	}
 
 
 
@@ -301,16 +310,24 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 	for i, c := range s.selects {
 		if c.tokenCode == in.TokenCode {
 
-			if cont.IsSelected {
-				s.selects[i].selectCache = append(s.selects[i].selectCache, cacheCont)
-			} else if !cont.IsSelected {
-				s.selects[i].selectCache = RemoveFromSelectCacheIfFalse(s.selects[i].selectCache, cacheCont)
-			}
-			for tok, element := range c.chanMap {
-				log.Printf("Iterating to send to chan for %v\n", tok)
-				log.Printf("chans: %v", c.chanMap)
-				element <- cont
-			}
+
+
+
+				if cont.IsSelected {
+					s.selects[i].selectCache = append(s.selects[i].selectCache, cacheCont)
+				} else if !cont.IsSelected {
+					s.selects[i].selectCache = RemoveFromSelectCacheIfFalse(s.selects[i].selectCache, cacheCont)
+				}
+
+				for tok, element := range c.chanMap {
+
+						//@TODO: for some reason if user doesnt selectsubscribe we never actual move on
+						log.Printf("[SELECT] Iterating to send to chan for %v\n", tok)
+						log.Printf("[SELECT] chans: %v", c.chanMap)
+						go func(c SelectionContainer, el chan SelectionContainer) { el <- c }(cont, element)
+
+				}
+
 			break
 		}
 	}
@@ -320,6 +337,8 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 }
 
 func (s *Server) SelectionInitial(ctx context.Context, in *SelectionCurrentUsersRequest) (*SelContArray, error) {
+	//@TODO: Get from DB
+
 	for _, c := range s.selects {
 		if c.tokenCode == in.TokenCode {
 			log.Println(c.selectCache)
@@ -359,15 +378,18 @@ func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPU
 				cont := <-s.selects[i].chanMap[in.AuthRequest.Token]
 				log.Printf("Got this from chan for %v %v: %v\n", fname, lname, cont)
 
+
+
 				//@HACK: dont spam client cuz client isnt buffered :(
 
 
-				if err := stream.Send(&cont); err != nil {
-					s.selects[i].chanMap[in.AuthRequest.Token] <- cont
+					if err := stream.Send(&cont); err != nil {
+						s.selects[i].chanMap[in.AuthRequest.Token] <- cont
 
-					log.Printf("Stream connection failed: %v", err)
-					return nil
-				}
+						log.Printf("Stream connection failed: %v", err)
+						return nil
+					}
+
 				//// listen for bounceback
 				//for {
 				//	req, err := stream.Recv()

@@ -44,6 +44,7 @@ create table ORDERITEMS (
     paid_for BOOL,
     total_splits INT,
     paid_by TEXT[] DEFAULT '{}',
-    selected_by TEXT[] DEFAULT '{}'
+    selected_by text DEFAULT '',
+    split_by TEXT[] DEFAULT '{}'
 )
 
