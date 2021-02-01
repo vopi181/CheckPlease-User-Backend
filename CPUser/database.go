@@ -422,6 +422,35 @@ func DBPGStringArrayToStringSlice(str string) []string {
 	return ret;
 }
 
+func DBSelectionLock_Update(in *SelectionRequest, val bool) error {
+	stmt, err := db.Prepare(`UPDATE orderitems SET selected_by_lock = $1 WHERE item_id=$2`)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(val, in.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func DBClearSelects(in *SelectionCurrentUsersRequest) error {
+	phone, err := DBAuthTokenToPhone(in.AuthRequest.Token)
+	if err != nil {
+		return err
+	}
+	stmt, err := db.Prepare(`UPDATE orderitems SET selected_by ='', selected_by_lock=false WHERE selected_by=$1`)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(phone)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func DBSelectionClick(in *SelectionRequest) error {
 	phone, err := DBAuthTokenToPhone(in.AuthRequest.Token)
 	if err != nil {
@@ -430,19 +459,28 @@ func DBSelectionClick(in *SelectionRequest) error {
 
 	// handle splits differently
 	// @TODO: Handle splits differently
-	if !in.IsSplit {
+	//if !in.IsSplit {
 		// is selected
 		if in.IsSelected {
 			// Check if already selected_by
 			var selected_by string
-			err := db.QueryRow(`SELECT selected_by FROM orderitems WHERE item_id=$1`, in.Id).Scan(&selected_by)
+			var selected_by_lock bool
+			err := db.QueryRow(`SELECT selected_by, selected_by_lock FROM orderitems WHERE item_id=$1`, in.Id).Scan(&selected_by, &selected_by_lock)
 			if err != nil {
 				return err
 			}
 
-			if selected_by != "" {
+			if selected_by_lock || selected_by != "" {
 				return status.Errorf(codes.AlreadyExists, fmt.Sprintf("Already Selected %v", in.Id))
 			}
+
+			//lock
+			err = DBSelectionLock_Update(in, true);
+			if err != nil {
+				return err
+			}
+
+
 
 			stmt, err := db.Prepare(`UPDATE orderitems SET selected_by = $1 WHERE item_id=$2`)
 			if err != nil {
@@ -467,7 +505,7 @@ func DBSelectionClick(in *SelectionRequest) error {
 			}
 
 		}
-	}
+	//}
 
 	return nil
 }

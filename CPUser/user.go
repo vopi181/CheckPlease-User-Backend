@@ -287,6 +287,7 @@ func RemoveFromSelectCacheIfFalse(sc []SelectionContainer, c SelectionContainer)
 }
 
 func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emptypb.Empty, error) {
+
 	err := DBSelectionClick(in);
 	if err != nil {
 		return &empty.Empty{}, err
@@ -331,6 +332,11 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 			break
 		}
 	}
+	// unlock
+	err = DBSelectionLock_Update(in, false);
+	if err != nil {
+		return &empty.Empty{}, err
+	}
 
 	return &empty.Empty{}, nil
 
@@ -373,41 +379,50 @@ func (s *Server) SelectionSubscribe(in *SelectionCurrentUsersRequest, stream CPU
 			//	}
 			//}
 
+			longLoop:
 			for {
-				//log.Printf("notifchan: %\n", s.selects[i])
-				cont := <-s.selects[i].chanMap[in.AuthRequest.Token]
-				log.Printf("Got this from chan for %v %v: %v\n", fname, lname, cont)
 
+				select {
+					//log.Printf("notifchan: %\n", s.selects[i])
 
-
-				//@HACK: dont spam client cuz client isnt buffered :(
-
-
-					if err := stream.Send(&cont); err != nil {
-						s.selects[i].chanMap[in.AuthRequest.Token] <- cont
-
-						log.Printf("Stream connection failed: %v", err)
-						return nil
+					case <-stream.Context().Done(): {
+						log.Printf("[SELECT] done")
+						err = DBClearSelects(in)
+						break longLoop
 					}
+					case cont := <-s.selects[i].chanMap[in.AuthRequest.Token]:
+						{
+							log.Printf("Got this from chan for %v %v: %v\n", fname, lname, cont)
 
-				//// listen for bounceback
-				//for {
-				//	req, err := stream.Recv()
-				//	if err != nil {
-				//		log.Println(err)
-				//		return status.Errorf( codes.DataLoss,"Error receiving bounceback request: %v", err)
-				//	}
-				//	if req.LastUuid != cont.Uuid {
-				//		if err := stream.Send(&cont); err != nil {
-				//			c.tokenSelects <- cont
-				//
-				//			log.Printf("Stream connection failed: %v", err)
-				//			return nil
-				//		}
-				//	}
-				//	break
-				//
-				//}
+							//@HACK: dont spam client cuz client isnt buffered :(
+
+							if err := stream.Send(&cont); err != nil {
+								s.selects[i].chanMap[in.AuthRequest.Token] <- cont
+
+								log.Printf("Stream connection failed: %v", err)
+								return nil
+							}
+
+							//// listen for bounceback
+							//for {
+							//	req, err := stream.Recv()
+							//	if err != nil {
+							//		log.Println(err)
+							//		return status.Errorf( codes.DataLoss,"Error receiving bounceback request: %v", err)
+							//	}
+							//	if req.LastUuid != cont.Uuid {
+							//		if err := stream.Send(&cont); err != nil {
+							//			c.tokenSelects <- cont
+							//
+							//			log.Printf("Stream connection failed: %v", err)
+							//			return nil
+							//		}
+							//	}
+							//	break
+							//
+							//}
+						}
+				}
 			}
 
 		}

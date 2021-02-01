@@ -10,6 +10,6 @@ grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"EpLj3ssCAIsuaVMJJins
 
 # REMOTE
 
-#grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"YE1v2VLj46UCEKdupoL1AH5e\" }, \"tableToken\": \"1234\" }' checkplease.app:9000 CPUser.CPUser/OrderInitiation
-# grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"YE1v2VLj46UCEKdupoL1AH5e\" }, \"tokenCode\": \"1234\" }'     checkplease.app:9000 CPUser.CPUser/SelectionInitial
-#grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"YE1v2VLj46UCEKdupoL1AH5e\" }, \"tokenCode\": \"1234\" }' checkplease.app:9000 CPUser.CPUser/SelectionSubscribe
+#grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"h0eyiHO4FZ6Er2rlWcrmOrnI\" }, \"tableToken\": \"1234\" }' checkplease.app:9000 CPUser.CPUser/OrderInitiation
+# grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"h0eyiHO4FZ6Er2rlWcrmOrnI\" }, \"tokenCode\": \"1234\" }'     checkplease.app:9000 CPUser.CPUser/SelectionInitial
+#grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"h0eyiHO4FZ6Er2rlWcrmOrnI\" }, \"tokenCode\": \"1234\" }' checkplease.app:9000 CPUser.CPUser/SelectionSubscribe
