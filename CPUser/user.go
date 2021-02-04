@@ -333,6 +333,7 @@ func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emp
 		}
 	}
 	// unlock
+	log.Printf("[SELECT] unlocking")
 	err = DBSelectionLock_Update(in, false);
 	if err != nil {
 		return &empty.Empty{}, err

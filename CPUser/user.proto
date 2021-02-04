@@ -146,7 +146,7 @@ message OrderPayResponse {
 }
 
 message GetUserOrderHistoryResponse {
-  repeated OrderItem orders = 1;
+  repeated Order orders = 1;
 }
 
 
