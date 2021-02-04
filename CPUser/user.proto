@@ -134,6 +134,7 @@ message OrderInitiateRequest {
 
 message OrderInitiateResponse {
   Order order = 1;
+  float tax_rate = 2;
 }
 
 message OrderPayRequest {

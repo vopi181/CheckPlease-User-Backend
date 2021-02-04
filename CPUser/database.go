@@ -328,7 +328,7 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 	}
 	ord := &Order{RestName: rest_name, OrderId: order_id, Orders: orderitems}
 
-	return &OrderInitiateResponse{Order: ord}, nil
+	return &OrderInitiateResponse{Order: ord, TaxRate: .08}, nil
 
 }
 //@TODO: HANDLE PAYMENTS!!!!!!!!!!!!!!
