@@ -47,5 +47,6 @@ create table ORDERITEMS (
     selected_by text DEFAULT '',
     split_by TEXT[] DEFAULT '{}',
     selected_by_lock bool default false
-)
+);
+
 

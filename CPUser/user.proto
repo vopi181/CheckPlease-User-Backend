@@ -157,6 +157,7 @@ message ItemPay {
   PaymentCard pc = 2;
   bool split = 3;
   string token_code = 4;
+  float tip = 5;
 }
 
 message ItemPayNotification {
