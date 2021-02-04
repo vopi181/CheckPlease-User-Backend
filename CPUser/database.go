@@ -347,6 +347,13 @@ func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
 	// update db
 
 
+	var paid_for bool
+	err  =  db.QueryRow("SELECT paid_for FROM orderitems WHERE item_id=$1", in.ItemPay.Id).Scan(&paid_for)
+
+	if paid_for {
+		return &OrderPayResponse{}, status.Errorf(codes.AlreadyExists, "Item already paid for: %v", in.ItemPay.Id)
+	}
+
 
 	var total_splits int64
 	var current_cost float64

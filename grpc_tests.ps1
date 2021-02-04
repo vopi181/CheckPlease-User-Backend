@@ -5,7 +5,7 @@ grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"asdfasdf\" }, \"tabl
 grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"EpLj3ssCAIsuaVMJJinsSVBY\" }, \"tableToken\": \"12345\" }' localhost:9000 CPUser.CPUser/OrderInitiation
 grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"asdfasdf\" }, \"tokenCode\": \"12345\" }'     localhost:9000 CPUser.CPUser/SelectionInitial
 grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"EpLj3ssCAIsuaVMJJinsSVBY\" }, \"tokenCode\": \"12345\" }'     localhost:9000 CPUser.CPUser/SelectionInitial
-grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"EpLj3ssCAIsuaVMJJinsSVBY\" }, \"tokenCode\": \"12345\" }' localhost:9000 CPUser.CPUser/SelectionSubscribe
+grpcurl -v -plaintext -d '{ \"authRequest\": { \"Token\": \"EpLj3ssCAIsuaVMJJinsSVBY\" }, \"tokenCode\": \"12345\" }' localhost:9000 CPUser.CPUser/ItemPaySubscribe
 
 
 # REMOTE

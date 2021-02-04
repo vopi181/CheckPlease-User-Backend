@@ -217,7 +217,8 @@ func (s* Server) OrderPay(ctx context.Context, in *OrderPayRequest) (*OrderPayRe
 			log.Printf("C: %v\n", c)
 			for tok, element := range c.chanMap {
 				log.Printf("[ORDER] Adding cont to ItemPay chan for %v\n", tok)
-				element <- cont
+				go func(c ItemPayNotification, el chan ItemPayNotification) { el <- c }(cont, element)
+
 			}
 		}
 
