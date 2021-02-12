@@ -299,7 +299,7 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 
 	orderitems := []*OrderItem{}
 
-	rows, err := db.Query("SELECT item_name, item_type, item_cost, item_id, paid_for, total_splits FROM orderitems where order_id=$1", order_id)
+	rows, err := db.Query("SELECT item_name, item_type, item_cost, item_id, paid_for, total_splits, paid_by FROM orderitems where order_id=$1", order_id)
 	if err != nil {
 		// handle this error better than this
 		return &OrderInitiateResponse{}, err
@@ -314,12 +314,26 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 		var item_id int64
 		var paid_for bool
 		var total_splits int64
-		err = rows.Scan(&item_name, &item_type, &item_cost, &item_id, &paid_for, &total_splits)
+		var paid_by_str string
+		err = rows.Scan(&item_name, &item_type, &item_cost, &item_id, &paid_for, &total_splits, &paid_by_str)
 		if err != nil {
 			return &OrderInitiateResponse{}, err
 		}
 
-		orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits})
+
+
+		// Grab Initials
+		paid_by_phone := DBPGStringArrayToStringSlice(paid_by_str)
+		paid_by_name := make([]string,0)
+
+		for _, phone := range paid_by_phone {
+			fname, lname, err := DBPhoneToFirstLastName(phone)
+			if err != nil {
+				return &OrderInitiateResponse{}, err
+			}
+			paid_by_name = append(paid_by_name, fname + " " + lname)
+		}
+		orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits, PaidBy: paid_by_phone, PaidByName: paid_by_name})
 
 	}
 	err = rows.Err()
@@ -427,6 +441,14 @@ func DBAuthTokenToFirstLastName(tok string) (string, string, error) {
 	return DBFname, DBLname, nil
 }
 
+func DBPhoneToFirstLastName(phone string) (string, string, error) {
+	var DBFname, DBLname string
+	err := db.QueryRow(`SELECT fname, lname FROM users WHERE phone=$1`, phone).Scan(&DBFname, &DBLname);
+	if err != nil {
+		return "", "", err
+	}
+	return DBFname, DBLname, nil
+}
 
 //func DBAuthTokenCompare(tok string) (bool, error) {
 //	var DBAuthToken string
@@ -489,6 +511,14 @@ func DBSelectionClick(in *SelectionRequest) error {
 	phone, err := DBAuthTokenToPhone(in.AuthRequest.Token)
 	if err != nil {
 		return err
+	}
+
+
+	// Check if already paid fro
+	var paid_for bool
+	err  =  db.QueryRow("SELECT paid_for FROM orderitems WHERE item_id=$1", in.Id).Scan(&paid_for)
+	if paid_for {
+		return status.Errorf(codes.AlreadyExists, "Item already paid for: %v", in.Id)
 	}
 
 	// handle splits differently

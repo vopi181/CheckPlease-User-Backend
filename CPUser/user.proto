@@ -185,6 +185,7 @@ message OrderItem  {
   repeated string paid_by = 7;
   int64 order_id = 8;
   repeated string selected_by = 9;
+  repeated string paid_by_name = 10;
 
 }
 
