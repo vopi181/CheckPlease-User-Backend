@@ -327,13 +327,25 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 		paid_by_name := make([]string,0)
 
 		for _, phone := range paid_by_phone {
-			fname, lname, err := DBPhoneToFirstLastName(phone)
-			if err != nil {
-				return &OrderInitiateResponse{}, err
+			if phone != "" {
+				fname, lname, err := DBPhoneToFirstLastName(phone)
+				if err != nil {
+					return &OrderInitiateResponse{}, err
+				}
+				paid_by_name = append(paid_by_name, fname+" "+lname)
 			}
-			paid_by_name = append(paid_by_name, fname + " " + lname)
 		}
-		orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits, PaidBy: paid_by_phone, PaidByName: paid_by_name})
+
+		// Hack so "" is not sent as phone number
+		paid_by_phone_real := make([]string, 0)
+		for _, phone := range paid_by_phone {
+			if phone != "" {
+				paid_by_phone_real =  append(paid_by_phone_real, phone)
+			}
+		}
+
+
+		orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits, PaidBy: paid_by_phone_real, PaidByName: paid_by_name})
 
 	}
 	err = rows.Err()
@@ -342,7 +354,11 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 	}
 	ord := &Order{RestName: rest_name, OrderId: order_id, Orders: orderitems}
 
-	return &OrderInitiateResponse{Order: ord, TaxRate: .08}, nil
+	// hack for floating point shit
+	var tr float32
+	tr =  .08
+
+	return &OrderInitiateResponse{Order: ord, TaxRate: tr}, nil
 
 }
 //@TODO: HANDLE PAYMENTS!!!!!!!!!!!!!!
@@ -443,6 +459,7 @@ func DBAuthTokenToFirstLastName(tok string) (string, string, error) {
 
 func DBPhoneToFirstLastName(phone string) (string, string, error) {
 	var DBFname, DBLname string
+	log.Printf("Getting name for %v", phone)
 	err := db.QueryRow(`SELECT fname, lname FROM users WHERE phone=$1`, phone).Scan(&DBFname, &DBLname);
 	if err != nil {
 		return "", "", err
