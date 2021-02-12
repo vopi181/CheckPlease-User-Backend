@@ -455,7 +455,7 @@ func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
 
 
 	// ADD TO TRANSACTION
-	stmt, err = db.Prepare(`INSERT INTO tx(item_id, paid_by, tip) VALUES($1, $2, $3) WHERE item_id=$4`)
+	stmt, err = db.Prepare(`INSERT INTO tx(item_id, paid_by, tip) VALUES($1, $2, $3)`)
 	if err != nil {
 		return &OrderPayResponse{}, err
 	}
