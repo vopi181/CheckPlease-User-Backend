@@ -236,7 +236,14 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 				return &GetUserOrderHistoryResponse{}, err
 			}
 
-			orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits, PaidBy: DBPGStringArrayToStringSlice(paid_by), OrderId: order_id})
+			// get tip from tx table
+			tip, err :=  DBGetTip(pn, item_id)
+			if err != nil {
+				// handle this error better than this
+				return &GetUserOrderHistoryResponse{}, err
+			}
+
+			orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits, PaidBy: DBPGStringArrayToStringSlice(paid_by), OrderId: order_id, Tip: tip})
 		}
 		err = rows.Err()
 		if err != nil {
@@ -253,7 +260,17 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 
 	return &GetUserOrderHistoryResponse{Orders: orders}, nil
 }
+// returns tip for phone number and item_id
+func DBGetTip(phone string, id int64) (float32, error) {
+	var tip float32
+	err := db.QueryRow(`SELECT tip FROM tx WHERE phone=$1 AND item_id=$2`,
+		phone, id).Scan(&tip)
+	if err != nil {
+		return 0, err
+	}
 
+	return tip, nil
+}
 
 
 // ###### PAYMENT ######
@@ -435,6 +452,18 @@ func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
 	if err != nil {
 		return &OrderPayResponse{}, err
 	}
+
+
+	// ADD TO TRANSACTION
+	stmt, err = db.Prepare(`INSERT INTO tx(item_id, paid_by, tip) VALUES($1, $2, $3) WHERE item_id=$4`)
+	if err != nil {
+		return &OrderPayResponse{}, err
+	}
+	_, err = stmt.Exec(in.ItemPay.Id, pn, in.ItemPay.Tip)
+	if err != nil {
+		return &OrderPayResponse{}, err
+	}
+
 
 	return &OrderPayResponse{Accepted: true}, nil
 }

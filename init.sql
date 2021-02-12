@@ -55,4 +55,9 @@ create table ORDERITEMS (
     selected_by_lock bool default false
 );
 
+create table tx (
+  item_id INT,
+  paid_by TEXT,
+  tip FLOAT default 0.0
+);
 
