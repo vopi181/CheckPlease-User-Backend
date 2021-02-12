@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
+	"strings"
 )
 
 
@@ -37,6 +38,9 @@ func VerifyCreateUserRequest(in *CreateUserRequest) error {
 	if(in.Phone == "" || in.Fname == "" || in.Lname == "") {
 		return status.Errorf(codes.InvalidArgument, fmt.Sprintf("Invalid User Data", in.String()));
 
+	}
+	if(strings.Contains(in.Fname, " ") || strings.Contains(in.Lname, " ")) {
+		return status.Errorf(codes.InvalidArgument, fmt.Sprintf("Invalid User Data", in.String()));
 	}
 
 
