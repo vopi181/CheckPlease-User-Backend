@@ -284,7 +284,7 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 		// handle this error better than this
 		fmt.Println(in)
 
-		return &OrderInitiateResponse{}, err
+		return &OrderInitiateResponse{}, status.Errorf(codes.NotFound, "Token Code Probably doesn't exist")
 	}
 
 	stmt, err := db.Prepare(`UPDATE users SET current_order=$1 WHERE auth_token=$2`)
@@ -529,6 +529,8 @@ func DBSelectionClick(in *SelectionRequest) error {
 	if err != nil {
 		return err
 	}
+
+	//
 
 
 	// Check if already paid fro
