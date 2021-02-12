@@ -263,7 +263,7 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 // returns tip for phone number and item_id
 func DBGetTip(phone string, id int64) (float32, error) {
 	var tip float32
-	err := db.QueryRow(`SELECT tip FROM tx WHERE phone=$1 AND item_id=$2`,
+	err := db.QueryRow(`SELECT tip FROM tx WHERE paid_by=$1 AND item_id=$2`,
 		phone, id).Scan(&tip)
 	if err != nil {
 		return 0, err
