@@ -1,3 +1,9 @@
+/*
+ * This file is subject to the additional terms and conditions defined in
+ * file 'LICENSE.md', which is part of this source code package.
+ * Copyright 2020-2021 Dominic "vopi181" Pace
+ */
+
 package CPUser
 
 import (
