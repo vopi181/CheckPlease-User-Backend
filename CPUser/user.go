@@ -293,6 +293,8 @@ func RemoveFromSelectCacheIfFalse(sc []SelectionContainer, c SelectionContainer)
 
 func (s *Server) SelectionClick(ctx context.Context, in *SelectionRequest) (*emptypb.Empty, error) {
 
+	//@TODO Check if user has selected split and throw an error. Going to need to migrate stuff to the DB
+
 	err := DBSelectionClick(in);
 	if err != nil {
 		return &empty.Empty{}, err

@@ -237,7 +237,10 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 			return &GetUserOrderHistoryResponse{}, err
 		}
 
-		orders = append(orders, &Order{RestName:rest_name, OrderId: order_id, Orders: orderitems})
+		var tr float32
+		tr =  .08
+
+		orders = append(orders, &Order{RestName:rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr})
 	}
 
 
@@ -352,13 +355,16 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 	if err != nil {
 		return &OrderInitiateResponse{}, err
 	}
-	ord := &Order{RestName: rest_name, OrderId: order_id, Orders: orderitems}
+
 
 	// hack for floating point shit
 	var tr float32
 	tr =  .08
+	ord := &Order{RestName: rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr}
 
-	return &OrderInitiateResponse{Order: ord, TaxRate: tr}, nil
+
+
+	return &OrderInitiateResponse{Order: ord}, nil
 
 }
 //@TODO: HANDLE PAYMENTS!!!!!!!!!!!!!!
