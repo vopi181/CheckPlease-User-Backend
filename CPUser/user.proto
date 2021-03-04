@@ -201,6 +201,8 @@ message Order {
   int64 order_id = 2;
   repeated OrderItem orders = 3;
   float tax_rate = 4;
+  float tax_amount  = 5;
+  int64 leye_id = 6;
 }
 
 message PaymentCard {

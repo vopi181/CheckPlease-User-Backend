@@ -32,7 +32,8 @@ create table TOKENS (
                     rest_name TEXT,
                     rest_id INT,
                     table_id INT,
-                    order_id INT
+                    order_id INT,
+                    LEYE_id INT DEFAULT -1
 );
 
 create table ORDERS (
@@ -47,8 +48,8 @@ create table ORDERITEMS (
     item_type TEXT,
     item_cost FLOAT,
     item_id SERIAL,
-    paid_for BOOL,
-    total_splits INT,
+    paid_for BOOL DEFAULT false,
+    total_splits INT default 0,
     paid_by TEXT[] DEFAULT '{}',
     selected_by text DEFAULT '',
     split_by TEXT[] DEFAULT '{}',

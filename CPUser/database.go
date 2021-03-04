@@ -220,6 +220,10 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 			return &GetUserOrderHistoryResponse{}, err
 		}
 		defer rows.Close()
+
+		//running total of cost
+		var order_total float32 = 0.0
+
 		// Iterate through rows  in DB
 		for rows.Next() {
 			fmt.Println("Iterating order item rows")
@@ -237,10 +241,18 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 			}
 
 			// get tip from tx table
+			// + 1  is cuz item_id is serial
 			tip, err :=  DBGetTip(pn, item_id)
 			if err != nil {
 				// handle this error better than this
 				return &GetUserOrderHistoryResponse{}, err
+			}
+
+			if total_splits > 0 {
+				order_total = order_total + (item_cost/float32(total_splits))
+			} else {
+				order_total = order_total + item_cost
+
 			}
 
 			orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits, PaidBy: DBPGStringArrayToStringSlice(paid_by), OrderId: order_id, Tip: tip})
@@ -253,7 +265,7 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 		var tr float32
 		tr =  .08
 
-		orders = append(orders, &Order{RestName:rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr})
+		orders = append(orders, &Order{RestName:rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr, TaxAmount: tr*order_total})
 	}
 
 
@@ -263,6 +275,7 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 // returns tip for phone number and item_id
 func DBGetTip(phone string, id int64) (float32, error) {
 	var tip float32
+	log.Printf("Getting tip for %v %v", phone, id)
 	err := db.QueryRow(`SELECT tip FROM tx WHERE paid_by=$1 AND item_id=$2`,
 		phone, id).Scan(&tip)
 	if err != nil {
@@ -302,10 +315,11 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 	var rest_id int
 	var table_id int
 	var order_id int64
+	var LEYE_id int64
 
 	fmt.Println("Prepping Order")
-	err := db.QueryRow(`SELECT rest_name, rest_id, table_id, order_id FROM tokens WHERE token_code=$1`,
-		in.TableToken).Scan(&rest_name, &rest_id, &table_id, &order_id)
+	err := db.QueryRow(`SELECT rest_name, rest_id, table_id, order_id, LEYE_id FROM tokens WHERE token_code=$1`,
+		in.TableToken).Scan(&rest_name, &rest_id, &table_id, &order_id, &LEYE_id)
 	if err != nil {
 		// handle this error better than this
 		fmt.Println(in)
@@ -383,7 +397,7 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 	// hack for floating point shit
 	var tr float32
 	tr =  .08
-	ord := &Order{RestName: rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr}
+	ord := &Order{RestName: rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr, LeyeId: LEYE_id}
 
 
 
@@ -455,6 +469,7 @@ func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
 
 
 	// ADD TO TRANSACTION
+	log.Printf("Adding tip: %v %v %v", in.ItemPay.Id, pn, in.ItemPay.Tip)
 	stmt, err = db.Prepare(`INSERT INTO tx(item_id, paid_by, tip) VALUES($1, $2, $3)`)
 	if err != nil {
 		return &OrderPayResponse{}, err
