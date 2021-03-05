@@ -685,3 +685,14 @@ func DBGetSelects(in *SelectionCurrentUsersRequest) (*SelContArray, error) {
 	return &ret, nil
 	return &SelContArray{}, nil
 }
+
+func DBIsPhoneInDB(phone string) bool {
+	var pn string
+	err  :=  db.QueryRow("SELECT phone FROM users WHERE phone=$1", phone).Scan(&pn)
+	if err != nil {
+		log.Printf("No user with phone %v", phone)
+		return false
+	}
+	return true
+
+}

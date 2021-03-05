@@ -114,6 +114,11 @@ func (s *Server) SMSVerification(ctx context.Context, in *VerifySMSRequest) (*Au
 
 func (s *Server) ReAuthUser(ctx context.Context, in *ReAuthUserRequest) (*AuthTokenResponse, error) {
 
+	if !DBIsPhoneInDB(in.Phone) {
+		return nil, status.Errorf(codes.NotFound, "No user with the phone number %v", in.Phone)
+	}
+
+
 	SMSVerificationCode, err := phone_auth.SendTextVerification(in.Phone);
 	if(err != nil) {
 		return nil, err;
