@@ -609,7 +609,9 @@ func DBSelectionClick(in *SelectionRequest) error {
 				return err
 			}
 
-			if selected_by_lock || selected_by != "" {
+
+			// deleted || selected_by != ""
+			if selected_by_lock  {
 				log.Printf("[SELECT] Select Already Exists %v")
 				return status.Errorf(codes.AlreadyExists, fmt.Sprintf("Already Selected %v", in.Id))
 			}
@@ -623,18 +625,28 @@ func DBSelectionClick(in *SelectionRequest) error {
 				return err
 			}
 
+			if !in.IsSplit {
 
+				stmt, err := db.Prepare(`UPDATE orderitems SET selected_by = $1 WHERE item_id=$2`)
+				if err != nil {
+					return err
+				}
 
-			stmt, err := db.Prepare(`UPDATE orderitems SET selected_by = $1 WHERE item_id=$2`)
-			if err != nil {
-				return err
+				_, err = stmt.Exec(phone, in.Id)
+				if err != nil {
+					return err
+				}
+			} else {
+				stmt, err := db.Prepare(`UPDATE orderitems SET split_by=array_append(split_by, $1) WHERE item_id=$2`)
+				if err != nil {
+					return err
+				}
+
+				_, err = stmt.Exec(phone, in.Id)
+				if err != nil {
+					return err
+				}
 			}
-
-			_, err = stmt.Exec(phone, in.Id)
-			if err != nil {
-				return err
-			}
-
 		} else {
 			//is unselected
 			stmt, err := db.Prepare(`UPDATE orderitems SET selected_by = $1, selected_by_lock=false WHERE item_id=$2`)
@@ -646,6 +658,18 @@ func DBSelectionClick(in *SelectionRequest) error {
 			if err != nil {
 				return err
 			}
+
+			//is unselected
+			stmt, err = db.Prepare(`UPDATE orderitems SET split_by = array_remove(split_by,$1), selected_by_lock=false WHERE item_id=$2`)
+			if err != nil {
+				return err
+			}
+
+			_, err = stmt.Exec(phone, in.Id)
+			if err != nil {
+				return err
+			}
+
 
 		}
 	//}
