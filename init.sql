@@ -65,6 +65,8 @@ create table tx (
   order_id INT NOT NULL,
   paid_by TEXT NOT NULL,
   tx_id SERIAL PRIMARY KEY,
-  tip FLOAT default 0.0
+  tip FLOAT default 0.0,
+  LEYE_pin INT,
+  LEYE_bal INT
 );
 

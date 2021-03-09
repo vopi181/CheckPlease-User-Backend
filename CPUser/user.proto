@@ -149,6 +149,8 @@ message OrderPayRequest {
   string token_code = 3;
   float tip = 4;
   PaymentCard pc = 5;
+  int64 LEYE_pin = 6;
+  int64 LEYE_bal_to_use = 7;
 
 }
 
