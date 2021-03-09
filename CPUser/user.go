@@ -224,20 +224,25 @@ func (s* Server) OrderPay(ctx context.Context, in *OrderPayRequest) (*OrderPayRe
 	if err != nil {
 		return nil, err
 	}
-	cont := ItemPayNotification{Id: in.ItemPay.Id, Split: in.ItemPay.Split, Fname: fname, Lname: lname, Phone: phone}
 
+	// loop through item pays
 
-	for _, c := range s.pays {
-		if c.tokenCode == in.ItemPay.TokenCode {
-			log.Printf("C: %v\n", c)
-			for tok, element := range c.chanMap {
-				log.Printf("[ORDER] Adding cont to ItemPay chan for %v\n", tok)
-				go func(c ItemPayNotification, el chan ItemPayNotification) { el <- c }(cont, element)
+	for _, itempay := range  in.ItemPay {
+		cont := ItemPayNotification{Id: itempay.Id, Split: itempay.Split, Fname: fname, Lname: lname, Phone: phone}
 
+		for _, c := range s.pays {
+			if c.tokenCode == in.TokenCode {
+				log.Printf("C: %v\n", c)
+				for tok, element := range c.chanMap {
+					log.Printf("[ORDER] Adding cont to ItemPay chan for %v\n", tok)
+					go func(c ItemPayNotification, el chan ItemPayNotification) { el <- c }(cont, element)
+
+				}
 			}
-		}
 
+		}
 	}
+
 
 	return OPR, nil
 }

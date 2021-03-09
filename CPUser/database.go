@@ -206,15 +206,45 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 
 	orders := []*Order{}
 
+
 	for _, order_id_str := range past_orders_str_arrs {
 		order_id, _ := strconv.ParseInt(order_id_str, 10, 64)
 
+
+		// get rest id
+		var rest_id string
+		err = db.QueryRow("SELECT rest_id FROM orders where order_id=$1", order_id).Scan(&rest_id)
+
+		// get rest name
 		var rest_name string
-		err = db.QueryRow("SELECT rest_name FROM orders where order_id=$1", order_id).Scan(&rest_name)
+		err = db.QueryRow("SELECT rest_name FROM restaurants where rest_id=$1", order_id).Scan(&rest_name)
 
 		orderitems := []*OrderItem{}
 
-		rows, err := db.Query("SELECT item_name, item_type, item_cost, item_id, paid_for, total_splits, paid_by, order_id FROM orderitems where $1 = ANY(paid_by)", pn)
+
+		//get total tips first
+
+		var total_order_tip float32
+		total_order_tip = 0.0
+		rows, err := db.Query("SELECT tx_id, tip from tx where paid_by = $1", pn)
+		if err != nil {
+			// handle this error better than this
+			return &GetUserOrderHistoryResponse{}, err
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var tx_id int64
+			var tx_tip float32
+			err = rows.Scan(&tx_id, &tx_tip)
+			if err != nil {
+				return &GetUserOrderHistoryResponse{}, err
+			}
+			total_order_tip = total_order_tip + tx_tip
+
+		}
+
+
+		rows, err = db.Query("SELECT item_name, item_type, item_cost, item_id, paid_for, total_splits, paid_by, order_id FROM orderitems where $1 = ANY(paid_by)", pn)
 		if err != nil {
 			// handle this error better than this
 			return &GetUserOrderHistoryResponse{}, err
@@ -240,13 +270,7 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 				return &GetUserOrderHistoryResponse{}, err
 			}
 
-			// get tip from tx table
-			// + 1  is cuz item_id is serial
-			tip, err :=  DBGetTip(pn, item_id)
-			if err != nil {
-				// handle this error better than this
-				return &GetUserOrderHistoryResponse{}, err
-			}
+
 
 			if total_splits > 0 {
 				order_total = order_total + (item_cost/float32(total_splits))
@@ -255,7 +279,7 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 
 			}
 
-			orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits, PaidBy: DBPGStringArrayToStringSlice(paid_by), OrderId: order_id, Tip: tip})
+			orderitems = append(orderitems, &OrderItem{Name: item_name, Type: item_type, Cost: item_cost, Id: item_id, PaidFor: paid_for, TotalSplits: total_splits, PaidBy: DBPGStringArrayToStringSlice(paid_by), OrderId: order_id})
 		}
 		err = rows.Err()
 		if err != nil {
@@ -265,7 +289,7 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 		var tr float32
 		tr =  .08
 
-		orders = append(orders, &Order{RestName:rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr, TaxAmount: tr*order_total})
+		orders = append(orders, &Order{RestName:rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr, TaxAmount: tr*order_total, Tip: total_order_tip})
 	}
 
 
@@ -318,14 +342,25 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 	var LEYE_id int64
 
 	fmt.Println("Prepping Order")
-	err := db.QueryRow(`SELECT rest_name, rest_id, table_id, order_id, LEYE_id FROM tokens WHERE token_code=$1`,
-		in.TableToken).Scan(&rest_name, &rest_id, &table_id, &order_id, &LEYE_id)
+	err := db.QueryRow(`SELECT rest_id, table_id, order_id FROM tokens WHERE token_code=$1`,
+		in.TableToken).Scan(&rest_id, &table_id, &order_id)
+	if err != nil {
+		// handle this error better than this
+		fmt.Println(in)
+		log.Println(err)
+		return &OrderInitiateResponse{}, status.Errorf(codes.NotFound, "Token Code Probably doesn't exist")
+	}
+	err = db.QueryRow(`SELECT rest_name, LEYE_id FROM restaurants WHERE rest_id=$1`,
+		rest_id).Scan(&rest_name, &LEYE_id)
 	if err != nil {
 		// handle this error better than this
 		fmt.Println(in)
 
-		return &OrderInitiateResponse{}, status.Errorf(codes.NotFound, "Token Code Probably doesn't exist")
+		return &OrderInitiateResponse{}, status.Errorf(codes.NotFound, "Couldn't get restaurant info")
 	}
+
+
+
 
 	stmt, err := db.Prepare(`UPDATE users SET current_order=$1 WHERE auth_token=$2`)
 	if err != nil {
@@ -419,67 +454,101 @@ func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
 
 	// update db
 
+	// iterate through item pays
 
-	var paid_for bool
-	err  =  db.QueryRow("SELECT paid_for FROM orderitems WHERE item_id=$1", in.ItemPay.Id).Scan(&paid_for)
+	//@TODO: Maybe will need to have some kinda "not_accepted" array returned to client instead of erroring out early
 
-	if paid_for {
-		return &OrderPayResponse{}, status.Errorf(codes.AlreadyExists, "Item already paid for: %v", in.ItemPay.Id)
+
+
+
+	for _, itempay := range in.ItemPay {
+
+		var paid_for bool
+		err = db.QueryRow("SELECT paid_for FROM orderitems WHERE item_id=$1", itempay.Id).Scan(&paid_for)
+
+		if paid_for {
+			return &OrderPayResponse{}, status.Errorf(codes.AlreadyExists, "Item already paid for: %v", itempay.Id)
+		}
+
+		var total_splits int64
+		var current_cost float64
+		var order_id int64
+		err = db.QueryRow(`SELECT total_splits, item_cost, order_id FROM orderitems WHERE item_id=$1`,
+			itempay.Id).Scan(&total_splits, &current_cost, &order_id)
+		if err != nil {
+			// handle this error better than this
+			return &OrderPayResponse{}, err
+		}
+
+		// temp paid for variable
+		pf := true
+
+		if itempay.Split {
+			total_splits = total_splits + 1
+			pf = false
+		}
+
+		stmt, err := db.Prepare(`UPDATE orderitems SET paid_for=$1, total_splits=$2, paid_by= array_append(paid_by,$3) WHERE item_id=$4`)
+		if err != nil {
+			return &OrderPayResponse{}, err
+		}
+
+		_, err = stmt.Exec(pf, total_splits, pn, itempay.Id)
+		if err != nil {
+			return &OrderPayResponse{}, err
+		}
+
+
+		//check if user already has order in past order. Likely cuz they rescanned and are trying to purchase a new item
+		// Get past orders
+		var past_order_string string
+		var past_orders_str_arrs []string
+		err = db.QueryRow("SELECT past_orders FROM users WHERE phone=$1", pn).Scan(&past_order_string)
+		if err != nil {
+			return nil, err
+		}
+		past_orders_str_arrs = DBPGStringArrayToStringSlice(past_order_string)
+
+
+		order_id_str := strconv.FormatInt(order_id, 10)
+
+		if !DBStringInSlice(order_id_str, past_orders_str_arrs) {
+
+			stmt, err = db.Prepare(`UPDATE users SET past_orders = array_append(past_orders,$1) WHERE phone=$2`)
+			if err != nil {
+				return &OrderPayResponse{}, err
+			}
+
+			_, err = stmt.Exec(strconv.FormatInt(order_id, 10), pn)
+			if err != nil {
+				return &OrderPayResponse{}, err
+			}
+		}
+
+
 	}
 
 
-	var total_splits int64
-	var current_cost float64
+	// get order id for tx table
+
 	var order_id int64
-	err = db.QueryRow(`SELECT total_splits, item_cost, order_id FROM orderitems WHERE item_id=$1`,
-		in.ItemPay.Id).Scan(&total_splits, &current_cost, &order_id)
+	err = db.QueryRow(`SELECT order_id FROM orderitems WHERE item_id=$1`,
+		in.ItemPay[0].Id).Scan(&order_id)
 	if err != nil {
 		// handle this error better than this
 		return &OrderPayResponse{}, err
 	}
 
-	// temp paid for variable
-	pf := true
-
-	if in.ItemPay.Split {
-		total_splits = total_splits + 1
-		pf = false
-	}
-
-
-	stmt, err := db.Prepare(`UPDATE orderitems SET paid_for=$1, total_splits=$2, paid_by= array_append(paid_by,$3) WHERE item_id=$4`)
-	if err != nil {
-		return &OrderPayResponse{}, err
-	}
-
-	_, err = stmt.Exec(pf, total_splits, pn, in.ItemPay.Id)
-	if err != nil {
-		return &OrderPayResponse{}, err
-	}
-
-	stmt, err = db.Prepare(`UPDATE users SET past_orders = array_append(past_orders,$1) WHERE phone=$2`)
-	if err != nil {
-		return &OrderPayResponse{}, err
-	}
-
-	_, err = stmt.Exec(strconv.FormatInt(order_id, 10), pn)
-	if err != nil {
-		return &OrderPayResponse{}, err
-	}
-
-
 	// ADD TO TRANSACTION
-	log.Printf("Adding tip: %v %v %v", in.ItemPay.Id, pn, in.ItemPay.Tip)
-	stmt, err = db.Prepare(`INSERT INTO tx(item_id, paid_by, tip) VALUES($1, $2, $3)`)
+	log.Printf("Adding tip: %v %v %v",order_id, pn, in.Tip)
+	stmt, err := db.Prepare(`INSERT INTO tx(order_id, paid_by, tip) VALUES($1, $2, $3)`)
 	if err != nil {
 		return &OrderPayResponse{}, err
 	}
-	_, err = stmt.Exec(in.ItemPay.Id, pn, in.ItemPay.Tip)
+	_, err = stmt.Exec(order_id, pn, in.Tip)
 	if err != nil {
 		return &OrderPayResponse{}, err
 	}
-
-
 	return &OrderPayResponse{Accepted: true}, nil
 }
 
@@ -521,6 +590,18 @@ func DBPhoneToFirstLastName(phone string) (string, string, error) {
 		return "", "", err
 	}
 	return DBFname, DBLname, nil
+}
+
+func DBStringInSlice(a string, list []string) bool {
+	for _, b := range list {
+
+		//bint, _ := strconv.ParseInt(b, 10, 64)
+
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
 
 //func DBAuthTokenCompare(tok string) (bool, error) {

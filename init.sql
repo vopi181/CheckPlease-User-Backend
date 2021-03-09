@@ -5,7 +5,7 @@
  */
 
 create table USERS (
-                       phone TEXT,
+                       phone TEXT PRIMARY KEY,
                        fname TEXT,
                        lname TEXT,
                        auth_token TEXT,
@@ -28,17 +28,22 @@ create table PAYINFO (
 
 
 create table TOKENS (
-                    token_code TEXT,
-                    rest_name TEXT,
+                    token_code TEXT PRIMARY KEY,
                     rest_id INT,
                     table_id INT,
-                    order_id INT,
-                    LEYE_id INT DEFAULT -1
+                    order_id INT
+);
+
+create table RESTAURANTS (
+    rest_id SERIAL PRIMARY KEY,
+    rest_name TEXT NOT NULL,
+    menu_url TEXT,
+    LEYE_id INT
 );
 
 create table ORDERS (
-    order_id INT,
-    rest_name TEXT
+    order_id INT PRIMARY KEY,
+    rest_id INT
 );
 
 
@@ -47,7 +52,7 @@ create table ORDERITEMS (
     item_name TEXT,
     item_type TEXT,
     item_cost FLOAT,
-    item_id SERIAL,
+    item_id SERIAL PRIMARY KEY,
     paid_for BOOL DEFAULT false,
     total_splits INT default 0,
     paid_by TEXT[] DEFAULT '{}',
@@ -57,8 +62,9 @@ create table ORDERITEMS (
 );
 
 create table tx (
-  item_id INT,
-  paid_by TEXT,
+  order_id INT NOT NULL,
+  paid_by TEXT NOT NULL,
+  tx_id SERIAL PRIMARY KEY,
   tip FLOAT default 0.0
 );
 

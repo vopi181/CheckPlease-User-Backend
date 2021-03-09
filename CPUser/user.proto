@@ -145,7 +145,11 @@ message OrderInitiateResponse {
 
 message OrderPayRequest {
   AuthTokenRequest auth_request = 1;
-  ItemPay item_pay = 2;
+  repeated ItemPay item_pay = 2;
+  string token_code = 3;
+  float tip = 4;
+  PaymentCard pc = 5;
+
 }
 
 message OrderPayResponse {
@@ -161,10 +165,7 @@ message GetUserOrderHistoryResponse {
 
 message ItemPay {
   int64 id = 1;
-  PaymentCard pc = 2;
-  bool split = 3;
-  string token_code = 4;
-  float tip = 5;
+  bool split = 2;
 }
 
 message ItemPayNotification {
@@ -192,7 +193,6 @@ message OrderItem  {
   int64 order_id = 8;
   repeated string selected_by = 9;
   repeated string paid_by_name = 10;
-  float tip = 11;
 
 }
 
@@ -203,6 +203,8 @@ message Order {
   float tax_rate = 4;
   float tax_amount  = 5;
   int64 leye_id = 6;
+  float tip = 7;
+
 }
 
 message PaymentCard {
