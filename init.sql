@@ -66,7 +66,7 @@ create table tx (
   paid_by TEXT NOT NULL,
   tx_id SERIAL PRIMARY KEY,
   tip FLOAT default 0.0,
-  LEYE_pin INT,
-  LEYE_bal INT
+  LEYE_pin INT DEFAULT 0,
+  LEYE_bal FLOAT DEFAULT 0.0
 );
 
