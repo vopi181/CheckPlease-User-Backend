@@ -287,7 +287,14 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 		}
 
 		var tr float32
+
+		//@TODO: actual tax stuff
 		tr =  .08
+		// so it doesnt  show up in order history if no items
+		if len(orderitems) < 1 {
+			tr = 0.0
+		}
+
 
 		orders = append(orders, &Order{RestName:rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr, TaxAmount: tr*order_total, Tip: total_order_tip})
 	}
