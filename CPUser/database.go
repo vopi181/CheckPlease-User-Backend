@@ -698,12 +698,17 @@ func DBSelectionClick(in *SelectionRequest) error {
 			}
 
 
-			// deleted || selected_by != ""
+			// attempted at selection race conditions or smth
 			if selected_by_lock  {
 				log.Printf("[SELECT] Select Already Exists %v")
 				return status.Errorf(codes.AlreadyExists, fmt.Sprintf("Already Selected %v", in.Id))
 			}
 
+			// if not splitting and already selected
+			if !in.IsSplit && selected_by != "" {
+				log.Printf("[SELECT] Select Already Exists %v")
+				return status.Errorf(codes.AlreadyExists, fmt.Sprintf("Already Selected %v", in.Id))
+			}
 
 
 			//lock,
