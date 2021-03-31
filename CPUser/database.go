@@ -244,7 +244,7 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 		}
 
 
-		rows, err = db.Query("SELECT item_name, item_type, item_cost, item_id, paid_for, total_splits, paid_by, order_id FROM orderitems where $1 = ANY(paid_by)", pn)
+		rows, err = db.Query("SELECT item_name, item_type, item_cost, item_id, paid_for, total_splits, paid_by, order_id FROM orderitems where $1 = ANY(paid_by) AND order_id = $2", pn, order_id)
 		if err != nil {
 			// handle this error better than this
 			return &GetUserOrderHistoryResponse{}, err
