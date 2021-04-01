@@ -347,7 +347,6 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 	var table_id int
 	var order_id int64
 	var LEYE_id int64
-
 	fmt.Println("Prepping Order")
 	err := db.QueryRow(`SELECT rest_id, table_id, order_id FROM tokens WHERE token_code=$1`,
 		in.TableToken).Scan(&rest_id, &table_id, &order_id)
@@ -357,14 +356,36 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 		log.Println(err)
 		return &OrderInitiateResponse{}, status.Errorf(codes.NotFound, "Token Code Probably doesn't exist")
 	}
-	err = db.QueryRow(`SELECT rest_name, LEYE_id FROM restaurants WHERE rest_id=$1`,
-		rest_id).Scan(&rest_name, &LEYE_id)
-	if err != nil {
-		// handle this error better than this
-		fmt.Println(in)
 
-		return &OrderInitiateResponse{}, status.Errorf(codes.NotFound, "Couldn't get restaurant info")
+	// Check if LEYE id is null
+
+	var LEYE_id_null_count int
+	err = db.QueryRow(`SELECT COUNT(*) FROM restaurants WHERE rest_id=$1 and LEYE_id is NULL`, rest_id).Scan(&LEYE_id_null_count);
+	if err != nil {
+		log.Fatal(err)
 	}
+	if LEYE_id_null_count > 0 {
+		err = db.QueryRow(`SELECT rest_name FROM restaurants WHERE rest_id=$1`,
+			rest_id).Scan(&rest_name)
+		if err != nil {
+			// handle this error better than this
+			fmt.Println(in)
+
+			return &OrderInitiateResponse{}, status.Errorf(codes.NotFound, "Couldn't get restaurant info")
+		}
+	} else {
+		err = db.QueryRow(`SELECT rest_name, LEYE_id FROM restaurants WHERE rest_id=$1`,
+			rest_id).Scan(&rest_name, &LEYE_id)
+		if err != nil {
+			// handle this error better than this
+			fmt.Println(in)
+
+			return &OrderInitiateResponse{}, status.Errorf(codes.NotFound, "Couldn't get restaurant info")
+		}
+
+	}
+
+
 
 
 
