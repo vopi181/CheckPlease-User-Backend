@@ -217,8 +217,8 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 
 		// get rest name
 		var rest_name string
-		err = db.QueryRow("SELECT rest_name FROM restaurants where rest_id=$1", order_id).Scan(&rest_name)
 
+		err = db.QueryRow("SELECT rest_nameFROM restaurants where rest_id=$1", order_id).Scan(&rest_name)
 		orderitems := []*OrderItem{}
 
 
@@ -343,6 +343,7 @@ func DBPaymentAddCard(in *PaymentAddCardRequest) error {
 // ###### ORDERS ######
 func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 	var rest_name string
+	var menu_url string
 	var rest_id int
 	var table_id int
 	var order_id int64
@@ -365,17 +366,17 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 		log.Fatal(err)
 	}
 	if LEYE_id_null_count > 0 {
-		err = db.QueryRow(`SELECT rest_name FROM restaurants WHERE rest_id=$1`,
-			rest_id).Scan(&rest_name)
+		err = db.QueryRow(`SELECT rest_name, menu_url FROM restaurants WHERE rest_id=$1`,
+			rest_id).Scan(&rest_name, &menu_url)
 		if err != nil {
 			// handle this error better than this
 			fmt.Println(in)
 
-			return &OrderInitiateResponse{}, status.Errorf(codes.NotFound, "Couldn't get restaurant info")
+			return &OrderInitiateResponse{}, status.Errorf(codes.NotFound, "Couldn't get restaurant info.")
 		}
 	} else {
-		err = db.QueryRow(`SELECT rest_name, LEYE_id FROM restaurants WHERE rest_id=$1`,
-			rest_id).Scan(&rest_name, &LEYE_id)
+		err = db.QueryRow(`SELECT rest_name, LEYE_id, menu_url FROM restaurants WHERE rest_id=$1`,
+			rest_id).Scan(&rest_name, &LEYE_id, &menu_url)
 		if err != nil {
 			// handle this error better than this
 			fmt.Println(in)
@@ -460,7 +461,7 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 	// hack for floating point shit
 	var tr float32
 	tr =  .08
-	ord := &Order{RestName: rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr, LeyeId: LEYE_id}
+	ord := &Order{RestName: rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr, LeyeId: LEYE_id, MenuUrl: menu_url}
 
 
 

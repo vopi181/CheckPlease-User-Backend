@@ -206,6 +206,7 @@ message Order {
   float tax_amount  = 5;
   int64 leye_id = 6;
   float tip = 7;
+  string menu_url = 8;
 
 }
 
