@@ -360,6 +360,7 @@ func DBPrepOrder(in *OrderInitiateRequest) (*OrderInitiateResponse, error) {
 
 	// Check if LEYE id is null
 
+	//@TODO: Check if fields exist more elgantly
 	var LEYE_id_null_count int
 	err = db.QueryRow(`SELECT COUNT(*) FROM restaurants WHERE rest_id=$1 and LEYE_id is NULL`, rest_id).Scan(&LEYE_id_null_count);
 	if err != nil {
@@ -811,3 +812,5 @@ func DBIsPhoneInDB(phone string) bool {
 	return true
 
 }
+
+//@TODO: field exists
