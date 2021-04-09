@@ -217,8 +217,8 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 
 		// get rest name
 		var rest_name string
-
-		err = db.QueryRow("SELECT rest_nameFROM restaurants where rest_id=$1", order_id).Scan(&rest_name)
+		
+		err = db.QueryRow("SELECT rest_name FROM restaurants where rest_id=$1", order_id).Scan(&rest_name)
 		orderitems := []*OrderItem{}
 
 
