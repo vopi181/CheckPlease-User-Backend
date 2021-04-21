@@ -38,7 +38,8 @@ create table RESTAURANTS (
     rest_id SERIAL PRIMARY KEY,
     rest_name TEXT NOT NULL,
     menu_url TEXT,
-    LEYE_id INT
+    LEYE_id INT,
+    zip TEXT NOT NULL
 );
 
 create table ORDERS (
@@ -67,6 +68,10 @@ create table tx (
   tx_id SERIAL PRIMARY KEY,
   tip FLOAT default 0.0,
   LEYE_pin INT DEFAULT 0,
-  LEYE_bal FLOAT DEFAULT 0.0
+  LEYE_bal FLOAT DEFAULT 0.0,
+  device_info TEXT DEFAULT '',
+  geo_id TEXT DEFAULT '',
+  time timestamptz NOT NULL,
+  user_authed BOOL NOT NULL DEFAULT false
 );
 

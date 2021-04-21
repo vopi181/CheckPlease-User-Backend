@@ -42,11 +42,11 @@ func VerifyCreateUserRequest(in *CreateUserRequest) error {
 	//@TODO: add more userinput validate
 
 	if(in.Phone == "" || in.Fname == "" || in.Lname == "") {
-		return status.Errorf(codes.InvalidArgument, fmt.Sprintf("Invalid User Data", in.String()));
+		return status.Errorf(codes.InvalidArgument, fmt.Sprintf("Invalid User Data %v", in.String()));
 
 	}
 	if(strings.Contains(in.Fname, " ") || strings.Contains(in.Lname, " ")) {
-		return status.Errorf(codes.InvalidArgument, fmt.Sprintf("Invalid User Data", in.String()));
+		return status.Errorf(codes.InvalidArgument, fmt.Sprintf("Invalid User Data %v", in.String()));
 	}
 
 
@@ -210,7 +210,13 @@ func (s* Server) OrderInitiation(ctx context.Context, in *OrderInitiateRequest) 
 }
 
 func (s* Server) OrderPay(ctx context.Context, in *OrderPayRequest) (*OrderPayResponse, error) {
-	OPR, err := DBPayItem(in)
+
+	//check if empty request
+	if in.TokenCode == "" || len(in.ItemPay) < 1 {
+		return nil, status.Errorf(codes.InvalidArgument, "Invalid OrderPayRequest")
+	}
+
+		OPR, err := DBPayItem(in)
 	if err != nil {
 		return nil, err
 	}

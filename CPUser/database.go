@@ -217,7 +217,7 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 
 		// get rest name
 		var rest_name string
-		
+
 		err = db.QueryRow("SELECT rest_name FROM restaurants where rest_id=$1", order_id).Scan(&rest_name)
 		orderitems := []*OrderItem{}
 
@@ -226,16 +226,22 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 
 		var total_order_tip float32
 		total_order_tip = 0.0
-		rows, err := db.Query("SELECT tx_id, tip from tx where paid_by = $1", pn)
+		rows, err := db.Query("SELECT tx_id, tip, time from tx where paid_by = $1 and order_id=$2", pn, order_id)
 		if err != nil {
 			// handle this error better than this
 			return &GetUserOrderHistoryResponse{}, err
 		}
 		defer rows.Close()
+
+
+		// this will be the latest tx
+		var tx_time string
+
 		for rows.Next() {
 			var tx_id int64
 			var tx_tip float32
-			err = rows.Scan(&tx_id, &tx_tip)
+
+			err = rows.Scan(&tx_id, &tx_tip, &tx_time)
 			if err != nil {
 				return &GetUserOrderHistoryResponse{}, err
 			}
@@ -295,8 +301,8 @@ func DBGetUserOrderHistory(in *AuthTokenRequest) (*GetUserOrderHistoryResponse, 
 			tr = 0.0
 		}
 
-
-		orders = append(orders, &Order{RestName:rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr, TaxAmount: tr*order_total, Tip: total_order_tip})
+		//finalized is false for now to check in with POS when in POS system
+		orders = append(orders, &Order{RestName:rest_name, OrderId: order_id, Orders: orderitems, TaxRate: tr, TaxAmount: tr*order_total, Tip: total_order_tip, Finalized: false, Time: tx_time})
 	}
 
 
@@ -510,6 +516,12 @@ func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
 			return &OrderPayResponse{}, err
 		}
 
+		// check if user is trying to pay without splitting for an item that has splits already
+		if !itempay.Split && total_splits > 0 {
+			return &OrderPayResponse{}, status.Errorf(codes.AlreadyExists, "Trying to pay for an already split item: %v", itempay.Id)
+
+		}
+
 		// temp paid for variable
 		pf := true
 
@@ -571,11 +583,11 @@ func DBPayItem(in *OrderPayRequest) (*OrderPayResponse, error) {
 
 	// ADD TO TRANSACTION
 	log.Printf("Adding tip: %v %v %v",order_id, pn, in.Tip)
-	stmt, err := db.Prepare(`INSERT INTO tx(order_id, paid_by, tip) VALUES($1, $2, $3)`)
+	stmt, err := db.Prepare(`INSERT INTO tx(order_id, paid_by, tip, device_info, geo_id, time, user_authed) VALUES($1, $2, $3, $4, $5, NOW(), $6)`)
 	if err != nil {
 		return &OrderPayResponse{}, err
 	}
-	_, err = stmt.Exec(order_id, pn, in.Tip)
+	_, err = stmt.Exec(order_id, pn, in.Tip, in.DeviceInfo, in.GeoId, in.UserUsedAuth)
 	if err != nil {
 		return &OrderPayResponse{}, err
 	}
@@ -723,13 +735,13 @@ func DBSelectionClick(in *SelectionRequest) error {
 
 			// attempted at selection race conditions or smth
 			if selected_by_lock  {
-				log.Printf("[SELECT] Select Already Exists %v")
+				log.Printf("[SELECT] Select Already Exists %v", in.String())
 				return status.Errorf(codes.AlreadyExists, fmt.Sprintf("Already Selected %v", in.Id))
 			}
 
 			// if not splitting and already selected
 			if !in.IsSplit && selected_by != "" {
-				log.Printf("[SELECT] Select Already Exists %v")
+				log.Printf("[SELECT] Select Already Exists %v", in.String())
 				return status.Errorf(codes.AlreadyExists, fmt.Sprintf("Already Selected %v", in.Id))
 			}
 
